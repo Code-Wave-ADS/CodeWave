@@ -1,3 +1,7 @@
+## Desafio
+
+O desafio consiste em desenvolver um chatbot no Telegram que tem como objetivo sanar dúvidas de novos desenvolvedores de jogos da Steam, a fim de facilitar para que eles saibam exatamente quais prioridades devem ter na criação de seus jogos e até mesmo qual é o momento ideal para lançá-los.
+
 ##  Backlog do Produto
 
 | Rank | Prioridade | User Stories | Story Points | Sprint |
