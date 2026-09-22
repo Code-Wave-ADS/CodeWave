@@ -30,7 +30,7 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 
 ## 🥇 DoD - Definition of Done
 
-## 📆 Crônograma das Sprints
+## 📆 Cronograma das Sprints
 
 ## 📕 Manual de instalação
 
