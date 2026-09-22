@@ -63,3 +63,76 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 |Lais Goulart | Scrum Team |  |
 |Endrew Vieira| Scrum Master | https://www.linkedin.com/in/endrew-vieira-484a68341/?lipi=urn%3Ali%3Apage%3Ap_mwlite_search_srp_all%3B54%2BCFkCvS8SIgdnMLmTTZg%3D%3D |
 |Pedro Noronha | Product Owner | https://www.linkedin.com/in/pedro-noronha-dias-chaves-9a7715181?trk=contact-info |
+
+## 🧠 Equipe
+
+<div align = "center">
+  <table>
+    <tr>
+      <th>Membro</th>
+      <th>Cargo</th>
+      <th>Github</th>
+      <th>Linkedin</th>
+    </tr>
+    <tr>
+      <td>Endrew Freire</td>
+      <td>Scrum Master</td>
+      <td><a href = "https://github.com/EndrewFreire"><img src = "docs/assets/img/git.png" width = "75" height = "75"></a></td>
+      <td><a href = "https://www.linkedin.com/in/endrew-vieira-484a68341/?lipi=urn%3Ali%3Apage%3Ap_mwlite_search_srp_all%3B54%2BCFkCvS8SIgdnMLmTTZg%3D%3D"><img src = "docs/assets/img/linkedin.jpg" width = "75" height = "75"></td>
+    </tr>
+      <tr>
+      <td>Flavio Kenji </td>
+      <td>Scrum Team</td>
+      <td><a href = "https://github.com/Kenji0Nakao"><img src = "docs/assets/img/git.png" width = "75" height = "75"></a></td>
+      <td><a href = "https://www.linkedin.com/in/flávio-kenji?utm_source=share_via&utm_content=profile&utm_medium=member_android"><img src = "docs/assets/img/linkedin.jpg" width = "75" height = "75"></td>
+    </tr>
+      <tr>
+      <td> Isabella Silva</td>
+      <td>Scrum Team</td>
+      <td><a href = "https://github.com/isabellaasilva"><img src = "docs/assets/img/git.png" width = "75" height = "75"></a></td>
+      <td><a href = " https://www.linkedin.com/in/isabella-silva-79b971246?utm_source=share_via&utm_content=profile&utm_medium=member_ios"><img src = "docs/assets/img/linkedin.jpg" width = "75" height = "75"></td>
+    </tr>
+      <tr>
+      <td>Joao Pedro</td>
+      <td>Scrum Team</td>
+      <td><a href = "https://github.com/joaoalvesx7"><img src = "docs/assets/img/git.png" width = "75" height = "75"></a></td>
+      <td><a href = " https://www.linkedin.com/in/joão-pedro-araújo-alves-de-almeida-488034408?utm_source=share_via&utm_content=profile&utm_medium=member_ios"><img src = "docs/assets/img/linkedin.jpg" width = "75" height = "75"></td>
+    </tr>
+      <tr>
+      <td>Kaiane Almeida</td>
+      <td>Scrum Team</td>
+      <td><a href = "https://github.com/Kaianealmeidaa"><img src = "docs/assets/img/git.png" width = "75" height = "75"></a></td>
+      <td><a href = "https://www.linkedin.com/in/kaiane-almeida-maciel-6177aa423?utm_source=share_via&utm_content=profile&utm_medium=member_android"><img src = "docs/assets/img/linkedin.jpg" width = "75" height = "75"></td>
+    </tr>
+      <tr>
+      <td>Lais Goulart</td>
+      <td>Scrum Team</td>
+      <td><a href = "https://github.com/laisadrielly10-sudo"><img src = "docs/assets/img/git.png" width = "75" height = "75"></a></td>
+      <td><a href = "https://www.linkedin.com/in/endrew-vieira-484a68341/?lipi=urn%3Ali%3Apage%3Ap_mwlite_search_srp_all%3B54%2BCFkCvS8SIgdnMLmTTZg%3D%3D"><img src = "docs/assets/img/linkedin.jpg" width = "75" height = "75"></td>
+    </tr>
+    <tr>
+      <td>Lucas Borba </td>
+      <td>Scrum Team</td>
+      <td><a href = "https://github.com/lucksspb"><img src = "docs/assets/img/git.png" width = "75" height = "75"></a></td>
+      <td><a href = "https://www.linkedin.com/in/lucas-borba-132239358/"><img src = "docs/assets/img/linkedin.jpg" width = "75" height = "75"></td>
+    </tr>
+      <tr>
+      <td>Luiz Pedro</td>
+      <td>Scrum Team</td>
+      <td><a href = "https://github.com/Luiiih"><img src = "docs/assets/img/git.png" width = "75" height = "75"></a></td>
+      <td><a href = "https://www.linkedin.com/in/endrew-vieira-484a68341/?lipi=urn%3Ali%3Apage%3Ap_mwlite_search_srp_all%3B54%2BCFkCvS8SIgdnMLmTTZg%3D%3D"><img src = "docs/assets/img/linkedin.jpg" width = "75" height = "75"></td>
+    </tr>
+      <tr>
+      <td>Mathias Lopes</td>
+      <td>Scrum Team</td>
+      <td><a href = "https://github.com/mathiasaguiarlopes"><img src = "docs/assets/img/git.png" width = "75" height = "75"></a></td>
+      <td><a href = "https://www.linkedin.com/in/mathias-a-6067033aa?utm_source=share_via&utm_content=profile&utm_medium=member_android"><img src = "docs/assets/img/linkedin.jpg" width = "75" height = "75"></td>
+    </tr>
+      <tr>
+      <td>Pedro Noronha</td>
+      <td>Product Owner</td>
+      <td><a href = "https://github.com/PedroNDChaves"><img src = "docs/assets/img/git.png" width = "75" height = "75"></a></td>
+      <td><a href = "https://www.linkedin.com/in/pedro-noronha-dias-chaves-9a7715181?trk=contact-info"><img src = "docs/assets/img/linkedin.jpg" width = "75" height = "75"></td>
+    </tr>
+  </table>
+
