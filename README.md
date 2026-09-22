@@ -48,7 +48,8 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 ## 📕 Manual de instalação
 
 ## 🤖 Tecnologias
-
+- Python 3.14+ ([Download](https://www.python.org/downloads/))
+  
 ## 🧠 Equipe
 | Membro   |    Função    | Linkedin                                     |
 | --------------- | :-----------: | ------------------------------------------------ |
