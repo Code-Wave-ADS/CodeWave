@@ -49,20 +49,6 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 
 ## 🤖 Tecnologias
 - Python 3.14+ ([Download](https://www.python.org/downloads/))
-  
-## 🧠 Equipe
-| Membro   |    Função    | Linkedin                                     |
-| --------------- | :-----------: | ------------------------------------------------ |
-| Lucas Borba | Scrum Team  | https://www.linkedin.com/in/lucas-borba-132239358/ |
-| Isabella Silva | Scrum Team | https://www.linkedin.com/in/isabella-silva-79b971246?utm_source=share_via&utm_content=profile&utm_medium=member_ios |
-|Flavio Kenji | Scrum Team | https://www.linkedin.com/in/flávio-kenji?utm_source=share_via&utm_content=profile&utm_medium=member_android |
-|Joao Pedro |Scrum Team | https://www.linkedin.com/in/joão-pedro-araújo-alves-de-almeida-488034408?utm_source=share_via&utm_content=profile&utm_medium=member_ios |
-|Kaiane Almeida | Scrum Team | https://www.linkedin.com/in/kaiane-almeida-maciel-6177aa423?utm_source=share_via&utm_content=profile&utm_medium=member_android |
-|Luiz Pedro |Scrum Team |  |
-| Mathias Lopes | Scrum Team| https://www.linkedin.com/in/mathias-a-6067033aa?utm_source=share_via&utm_content=profile&utm_medium=member_android |
-|Lais Goulart | Scrum Team |  |
-|Endrew Vieira| Scrum Master | https://www.linkedin.com/in/endrew-vieira-484a68341/?lipi=urn%3Ali%3Apage%3Ap_mwlite_search_srp_all%3B54%2BCFkCvS8SIgdnMLmTTZg%3D%3D |
-|Pedro Noronha | Product Owner | https://www.linkedin.com/in/pedro-noronha-dias-chaves-9a7715181?trk=contact-info |
 
 ## 🧠 Equipe
 
@@ -135,4 +121,5 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
       <td><a href = "https://www.linkedin.com/in/pedro-noronha-dias-chaves-9a7715181?trk=contact-info"><img src = "docs/assets/img/linkedin.jpg" width = "75" height = "75"></td>
     </tr>
   </table>
+</div>
 
