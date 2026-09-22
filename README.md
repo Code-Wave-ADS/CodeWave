@@ -47,5 +47,5 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 |Luiz Pedro |Scrum Team |  |
 | Mathias Lopes | Scrum Team| https://www.linkedin.com/in/mathias-a-6067033aa?utm_source=share_via&utm_content=profile&utm_medium=member_android |
 |Lais Goulart | Scrum Team |  |
-|Endrew Freira| Scrum Master | https://www.linkedin.com/in/endrew-vieira-484a68341/?lipi=urn%3Ali%3Apage%3Ap_mwlite_search_srp_all%3B54%2BCFkCvS8SIgdnMLmTTZg%3D%3D |
+|Endrew Vieira| Scrum Master | https://www.linkedin.com/in/endrew-vieira-484a68341/?lipi=urn%3Ali%3Apage%3Ap_mwlite_search_srp_all%3B54%2BCFkCvS8SIgdnMLmTTZg%3D%3D |
 |Pedro Noronha | Product Owner | https://www.linkedin.com/in/pedro-noronha-dias-chaves-9a7715181?trk=contact-info |
