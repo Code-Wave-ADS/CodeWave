@@ -27,10 +27,23 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 13 | Baixo | Como desenvolvedor, quero uma ferramenta para correlacionar as coisas em comum que todos os jogos bem-sucedidos têm. Para ter uma ideia do que eles estão fazendo de certo. | 20 | 3
 
 ## 🥈 DoR - Definition of Ready
+* User Stories com **Critérios de Aceitação**
+* Foi estimada pela equipe
+
+
 
 ## 🥇 DoD - Definition of Done
+* Código completo
+* Manual do Usuário 
+
 
 ## 📆 Cronograma das Sprints
+| Sprint   |    Duração    | Documentação                                     |
+| --------------- | :-----------: | ------------------------------------------------ |
+|Sprint 1  | 07/09 - 27/09  |  |
+|Sprint 2  |05/10 - 25/10  |  |
+|Sprint 3  |02/11 - 22/11  |  |
+
 
 ## 📕 Manual de instalação
 
