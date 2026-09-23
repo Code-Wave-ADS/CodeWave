@@ -80,7 +80,7 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
       <td> Isabella Silva</td>
       <td>Scrum Team</td>
       <td><a href = "https://github.com/isabellaasilva"><img src = "docs/assets/img/git.png" width = "75" height = "75"></a></td>
-      <td><a href = " https://www.linkedin.com/in/isabella-silva-79b971246?utm_source=share_via&utm_content=profile&utm_medium=member_ios"><img src = "docs/assets/img/linkedin.jpg" width = "75" height = "75"></td>
+      <td><a href = " https://www.linkedin.com/in/isabella-silva-79b971246?utm_source=share_via&utm_content=profile&utm_medium=member_ios "><img src = "docs/assets/img/linkedin.jpg" width = "75" height = "75"></td>
     </tr>
       <tr>
       <td>Joao Pedro</td>
