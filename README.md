@@ -110,7 +110,7 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
       <td>Luiz Pedro</td>
       <td>Scrum Team</td>
       <td><a href = "https://github.com/Luiiih"><img src = "docs/assets/img/git.png" width = "75" height = "75"></a></td>
-      <td><a href = "https://www.linkedin.com/in/endrew-vieira-484a68341/?lipi=urn%3Ali%3Apage%3Ap_mwlite_search_srp_all%3B54%2BCFkCvS8SIgdnMLmTTZg%3D%3D"><img src = "docs/assets/img/linkedin.jpg" width = "75" height = "75"></td>
+      <td><a href = "https://www.linkedin.com/in/luiz-tavares-627043381?utm_source=share_via&utm_content=profile&utm_medium=member_android"><img src = "docs/assets/img/linkedin.jpg" width = "75" height = "75"></td>
     </tr>
       <tr>
       <td>Mathias Lopes</td>
