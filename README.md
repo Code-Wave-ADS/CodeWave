@@ -45,9 +45,9 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 
 | Sprint          |    Duração   | Documentação                                     |
 | --------------- | :-----------: | ------------------------------------------------ |
-| **SPRINT 1** | 07/09 - 27/09 | [Documentação Sprint 1](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/sprint%201) |
-| **SPRINT 2** | 05/10 - 25/10 | [Documentação Sprint 2](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/sprint%202) |
-| **SPRINT 3** | 02/11 - 22/11 | [Documentação Sprint 3](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/sprint%203) |
+| **SPRINT 1** | 07/09 - 27/09 | [Documentação Sprint 1](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/Sprint1.md) |
+| **SPRINT 2** | 05/10 - 25/10 | [Documentação Sprint 2](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/Sprint2.md) |
+| **SPRINT 3** | 02/11 - 22/11 | [Documentação Sprint 3](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/Sprint3.md) |
 
 ## 📕 Manual de instalação
 
