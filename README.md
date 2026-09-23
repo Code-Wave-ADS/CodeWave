@@ -1,3 +1,7 @@
+<div align = "center">
+  <img src = "docs/assets/img/logo.jpg">
+</div>
+
 # STEAM ROBOT - API 1° Semestre ADS
 
 ## 🎯 Desafio
