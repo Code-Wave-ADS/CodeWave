@@ -18,3 +18,11 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 7 | Médio | Como desenvolvedor, gostaria de saber a % de jogadores em potencial que usam controle. Para preparar o jogo para adaptabilidade caso necessário. | 3 | 2
 8 | Médio | Como desenvolvedor, gostaria de facilmente encontrar o número de jogadores de uma categoria específica, para ter uma ideia de mercado disponível. | 5 | 2
 9 | Médio | Como desenvolvedor, quero uma ferramenta que permita que eu veja a minha margem de lucro real de forma rápida, fácil e escalonável. Para ver a viabilidade de meus preços. | 8 | 2
+
+## 🥈 DoR - Definition of Ready
+* User Stories com **Critérios de Aceitação**
+* Foi estimada pela equipe
+
+## 🥇 DoD - Definition of Done
+* Código completo
+* Manual do Usuário 
