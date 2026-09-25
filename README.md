@@ -34,12 +34,9 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 * User Stories com **Critérios de Aceitação**
 * Foi estimada pela equipe
 
-
-
 ## 🥇 DoD - Definition of Done
 * Código completo
 * Manual do Usuário 
-
 
 ## 📆 Cronograma das Sprints
 
