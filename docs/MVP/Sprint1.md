@@ -7,6 +7,7 @@ O desafio consiste em desenvolver um chatbot no Telegram que tem como objetivo s
 ## 💡 Solução
 
 Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pelo chatbot, conseguindo assim um grande leque de conteúdos para facilitar a criação de seu projeto, podendo até mesmo comparar algumas informações e jogos para saber, de forma precisa, qual caminho devem seguir ao criar seu jogo.
+
 ## 📖 Backlog do Produto
 
 | Rank | Prioridade | User Stories | Story Points | Sprint |
