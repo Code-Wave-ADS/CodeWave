@@ -9,7 +9,7 @@ Bot do Telegram em Python que usa:
 ## Estrutura
 
 ```text
-telegram_dev_support_ollama/
+SourceCode/
 ├── bot.py
 ├── agent.py
 ├── steam_analytics.py
