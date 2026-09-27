@@ -4,7 +4,7 @@ Bot do Telegram em Python que usa:
 - python-telegram-bot
 - Ollama
 - Pandas
-- steam.csv
+- Dataset da Steam
 
 ## Estrutura
 
