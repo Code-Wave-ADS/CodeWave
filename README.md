@@ -19,7 +19,7 @@
 ## 📓 Índice
 > Status do Projeto: Em andamento
 > 
-> Video do Projeto:  [Vídeo](https://youtu.be/IndOPnzHyrQ) 📺
+> Video do Projeto:  [Vídeo](https://youtu.be/gyAvtNEGqXM)🎬
 
 ## 🎯 Desafio<a id="desafio">
 
