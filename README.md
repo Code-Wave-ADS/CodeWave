@@ -15,6 +15,11 @@
   <a href ="#tecnologia">Tecnologias</a>  | 
   <a href ="#equipe"> Equipe</a> |
 
+## 📓 Índice
+> Status do Projeto: Em andamento
+> 
+> Video do Projeto:  [Vídeo](https://youtu.be/IndOPnzHyrQ) 📺
+
 ## 🎯 Desafio<a id="desafio">
 
 O desafio consiste em desenvolver um chatbot no Telegram que tem como objetivo sanar dúvidas de novos desenvolvedores de jogos da Steam, a fim de facilitar para que eles saibam exatamente quais prioridades devem ter na criação de seus jogos e até mesmo qual é o momento ideal para lançá-los.
