@@ -70,6 +70,8 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 - Jira  ([Link](https://www.atlassian.com/software/jira))
 - Ollama ([Link](https://ollama.com))
 - Telegram ([Link](https://telegram.org))
+- Visual Studio Code ([Link](https://code.visualstudio.com))
+- GitHub ([Link](https://github.com))
 
 ## 🧠 Equipe<a id="equipe">
 
