@@ -14,7 +14,8 @@
   <a href ="#manual">Manual de Instalação</a> |
   <a href ="#tecnologia">Tecnologias</a>  | 
   <a href ="#equipe"> Equipe</a> |
-
+  <br><br>
+  
 ## 📓 Índice
 > Status do Projeto: Em andamento
 > 
@@ -65,7 +66,10 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 ## 📕 Manual de instalação<a id="manual">
 
 ## 🤖 Tecnologias<a id="tecnologia">
-- Python 3.14+ ([Download](https://www.python.org/downloads/))
+- Python 3.14+ ([Link](https://www.python.org/downloads/))
+- Jira  ([Link](https://www.atlassian.com/software/jira))
+- Ollama ([Link](https://ollama.com))
+- Telegram ([Link](https://telegram.org))
 
 ## 🧠 Equipe<a id="equipe">
 
