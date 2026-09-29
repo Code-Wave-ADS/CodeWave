@@ -4,15 +4,26 @@
   <img src = "docs/assets/img/logowave.png">
 </div>
 
-## 🎯 Desafio
+<p align="center">
+  | <a href ="#desafio"> Desafio</a>  |
+  <a href ="#solucao"> Solução</a>  |   
+  <a href ="#backlog"> Backlog do Produto</a>  |
+  <a href ="#dor">DoR</a>  |
+  <a href ="#dod">DoD</a>  |
+  <a href ="#sprint"> Cronograma de Sprints</a>  |
+  <a href ="#manual">Manual de Instalação</a> |
+  <a href ="#tecnologia">Tecnologias</a>  | 
+  <a href ="#equipe"> Equipe</a> |
+
+## 🎯 Desafio<a id="desafio">
 
 O desafio consiste em desenvolver um chatbot no Telegram que tem como objetivo sanar dúvidas de novos desenvolvedores de jogos da Steam, a fim de facilitar para que eles saibam exatamente quais prioridades devem ter na criação de seus jogos e até mesmo qual é o momento ideal para lançá-los.
 
-## 💡 Solução
+## 💡 Solução<a id="solucao">
 
 Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pelo chatbot, conseguindo assim um grande leque de conteúdos para facilitar a criação de seu projeto, podendo até mesmo comparar algumas informações e jogos para saber, de forma precisa, qual caminho devem seguir ao criar seu jogo.
 
-## 📖 Backlog do Produto
+## 📖 Backlog do Produto<a id="backlog">
 
 | Rank | Prioridade | User Stories | Story Points | Sprint |
 |---:|:---:|---|---:|:---:|
@@ -30,15 +41,15 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 12 | Baixo | Como desenvolvedor, busco uma ferramenta que agilize o meu processo de priorização baseado em minhas necessidades. Para eu não perder tempo em sistemas desnecessários. | 40 | 3
 13 | Baixo | Como desenvolvedor, quero uma ferramenta para correlacionar as coisas em comum que todos os jogos bem-sucedidos têm. Para ter uma ideia do que eles estão fazendo de certo. | 20 | 3
 
-## 🥈 DoR - Definition of Ready
+## 🥈 DoR - Definition of Ready<a id="dor">
 * User Stories com **Critérios de Aceitação**
 * Foi estimada pela equipe
 
-## 🥇 DoD - Definition of Done
+## 🥇 DoD - Definition of Done<a id="dod">
 * Código completo
 * Manual do Usuário 
 
-## 📆 Cronograma das Sprints
+## 📆 Cronograma das Sprints<a id="sprint">
 
 | Sprint          |    Duração   | Documentação                                     |
 | --------------- | :-----------: | ------------------------------------------------ |
@@ -46,12 +57,12 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 | **SPRINT 2** | 05/10 - 25/10 | [MVP 2](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/Sprint2.md) |
 | **SPRINT 3** | 02/11 - 22/11 | [MVP 3](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/Sprint3.md) |
 
-## 📕 Manual de instalação
+## 📕 Manual de instalação<a id="manual">
 
-## 🤖 Tecnologias
+## 🤖 Tecnologias<a id="tecnologia">
 - Python 3.14+ ([Download](https://www.python.org/downloads/))
 
-## 🧠 Equipe
+## 🧠 Equipe<a id="equipe">
 
 <div align = "center">
   <table>
