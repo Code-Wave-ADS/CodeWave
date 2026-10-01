@@ -47,6 +47,7 @@ Como interpretar:
 - "qual plataforma é mais usada?" => ranking, platforms, count, count, desc.
 - "qual gênero está em alta?" => trend, genres, count, count, desc.
 - "qual gênero tem mais avaliações positivas?" => ranking, genres, positive_ratings, sum, desc.
+- "quais gêneros têm mais donos estimados?" => ranking, genres, owners_estimate, sum, desc.
 - "qual gênero é melhor avaliado?" => ranking, genres, rating_ratio, mean, desc.
 - "qual é o preço médio?" => summary, name, price, mean.
 - "quais jogos têm mais avaliações positivas?" => top_games, name, positive_ratings, max, desc.

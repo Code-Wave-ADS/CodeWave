@@ -111,6 +111,12 @@ class SteamAnalytics:
             )
 
         self.df = self.df.copy()
+
+        self.df["genres"] = self.df["genres"].fillna("").astype(str).str.replace(
+            r"\{'id':\s*'[^']*',\s*'description':\s*'([^']*)'\}",
+            r"\1",
+            regex=True
+        )
         self.df["release_date"] = pd.to_datetime(self.df["release_date"], errors="coerce")
         self.df["release_year"] = self.df["release_date"].dt.year.astype("Int64")
         self.df["owners_estimate"] = self.df["owners"].apply(self._owners_midpoint)

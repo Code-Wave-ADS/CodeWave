@@ -4,32 +4,15 @@
   <img src = "docs/assets/img/logowave.png">
 </div>
 
-<p align="center">
-  | <a href ="#desafio"> Desafio</a>  |
-  <a href ="#solucao"> Solução</a>  |   
-  <a href ="#backlog"> Backlog do Produto</a>  |
-  <a href ="#dor">DoR</a>  |
-  <a href ="#dod">DoD</a>  |
-  <a href ="#sprint"> Cronograma de Sprints</a>  |
-  <a href ="#manual">Manual de Instalação</a> |
-  <a href ="#tecnologia">Tecnologias</a>  | 
-  <a href ="#equipe"> Equipe</a> |
-  <br><br>
-  
-## 📓 Índice
-> Status do Projeto: Em andamento
-> 
-> Video do Projeto:  [Vídeo](https://youtu.be/gyAvtNEGqXM)🎬
-
-## 🎯 Desafio<a id="desafio">
+## 🎯 Desafio
 
 O desafio consiste em desenvolver um chatbot no Telegram que tem como objetivo sanar dúvidas de novos desenvolvedores de jogos da Steam, a fim de facilitar para que eles saibam exatamente quais prioridades devem ter na criação de seus jogos e até mesmo qual é o momento ideal para lançá-los.
 
-## 💡 Solução<a id="solucao">
+## 💡 Solução
 
 Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pelo chatbot, conseguindo assim um grande leque de conteúdos para facilitar a criação de seu projeto, podendo até mesmo comparar algumas informações e jogos para saber, de forma precisa, qual caminho devem seguir ao criar seu jogo.
 
-## 📖 Backlog do Produto<a id="backlog">
+## 📖 Backlog do Produto
 
 | Rank | Prioridade | User Stories | Story Points | Sprint |
 |---:|:---:|---|---:|:---:|
@@ -47,33 +30,28 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 12 | Baixo | Como desenvolvedor, busco uma ferramenta que agilize o meu processo de priorização baseado em minhas necessidades. Para eu não perder tempo em sistemas desnecessários. | 40 | 3
 13 | Baixo | Como desenvolvedor, quero uma ferramenta para correlacionar as coisas em comum que todos os jogos bem-sucedidos têm. Para ter uma ideia do que eles estão fazendo de certo. | 20 | 3
 
-## 🥈 DoR - Definition of Ready<a id="dor">
+## 🥈 DoR - Definition of Ready
 * User Stories com **Critérios de Aceitação**
 * Foi estimada pela equipe
 
-## 🥇 DoD - Definition of Done<a id="dod">
+## 🥇 DoD - Definition of Done
 * Código completo
 * Manual do Usuário 
 
-## 📆 Cronograma das Sprints<a id="sprint">
+## 📆 Cronograma das Sprints
 
 | Sprint          |    Duração   | Status    | Documentação                                     |
 | --------------- | :-----------: | :-----------: | ------------------------------------------------ |
-| **SPRINT 1** | 07/09 - 27/09 | Em andamento ⏳|[MVP 1](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/Sprint1.md) |
-| **SPRINT 2** | 05/10 - 25/10 | Em andamento ⏳|[MVP 2](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/Sprint2.md) |
-| **SPRINT 3** | 02/11 - 22/11 | Em andamento ⏳|[MVP 3](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/Sprint3.md) |
+| **SPRINT 1** | 07/09 - 27/09 | Em andamento ⏳ | [Documentação Sprint 1](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/Sprint1.md) |
+| **SPRINT 2** | 05/10 - 25/10 | Em andamento ⏳ | [Documentação Sprint 2](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/Sprint2.md) |
+| **SPRINT 3** | 02/11 - 22/11 | Em andamento ⏳ | [Documentação Sprint 3](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/Sprint3.md) |
 
-## 📕 Manual de instalação<a id="manual">
+## 📕 Manual de instalação
 
-## 🤖 Tecnologias<a id="tecnologia">
-- Python 3.14+ ([Link](https://www.python.org/downloads/))
-- Jira  ([Link](https://www.atlassian.com/software/jira))
-- Ollama ([Link](https://ollama.com))
-- Telegram ([Link](https://telegram.org))
-- Visual Studio Code ([Link](https://code.visualstudio.com))
-- GitHub ([Link](https://github.com))
+## 🤖 Tecnologias
+- Python 3.14+ ([Download](https://www.python.org/downloads/))
 
-## 🧠 Equipe<a id="equipe">
+## 🧠 Equipe
 
 <div align = "center">
   <table>
