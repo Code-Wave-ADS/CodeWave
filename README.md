@@ -42,7 +42,7 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 
 | Sprint          |    Duração   | Status    | Documentação                                     |
 | --------------- | :-----------: | :-----------: | ------------------------------------------------ |
-| **SPRINT 1** | 07/09 - 27/09 | Em andamento ⏳ | [Documentação Sprint 1](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/Sprint1.md) |
+| **SPRINT 1** | 07/09 - 27/09 | Concluído ✅ | [Documentação Sprint 1](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/Sprint1.md) |
 | **SPRINT 2** | 05/10 - 25/10 | Em andamento ⏳ | [Documentação Sprint 2](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/Sprint2.md) |
 | **SPRINT 3** | 02/11 - 22/11 | Em andamento ⏳ | [Documentação Sprint 3](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/Sprint3.md) |
 
