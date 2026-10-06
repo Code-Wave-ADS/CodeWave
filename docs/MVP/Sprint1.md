@@ -2,7 +2,7 @@
 
 >Status da Sprint 1: Concluído ✅
 >
->Vídeo da Sprint 1: [Vídeo 🎬](https://youtu.be/gyAvtNEGqXM)
+>Vídeo da Sprint 1: [Vídeo ](https://youtu.be/gyAvtNEGqXM)🎥
 
 ## 🎯 Desafio
 
