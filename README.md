@@ -4,15 +4,33 @@
   <img src = "docs/assets/img/logowave.png">
 </div>
 
-## 🎯 Desafio
+<p align = "center">
+  | <a href ="#Desafio"> Desafio</a>  |
+  <a href ="#Solução"> Solução</a>  |   
+  <a href ="#Backlog"> Backlog do Produto</a>  |
+  <a href ="#DoR">DoR</a>  |
+  <a href ="#DoD">DoD</a>  |
+  <a href ="#Cronograma"> Cronograma de Sprints</a>  |
+  <a href ="#Tecnologias">Tecnologias</a> |
+  <a href ="#Manual de instalação">Manual de Instalação</a>  | 
+  <a href ="#Equipe"> Equipe</a> |
+</p>
+<BR><BR>
+
+>Status do Projeto: Em andamento ⌛
+>
+>Vídeo da ferramenta: [Vídeo]()🎥
+<BR>
+
+## 🎯 Desafio <a id = "Desafio"></a>
 
 O desafio consiste em desenvolver um chatbot no Telegram que tem como objetivo sanar dúvidas de novos desenvolvedores de jogos da Steam, a fim de facilitar para que eles saibam exatamente quais prioridades devem ter na criação de seus jogos e até mesmo qual é o momento ideal para lançá-los.
 
-## 💡 Solução
+## 💡 Solução <a id = "Solução"></a>
 
 Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pelo chatbot, conseguindo assim um grande leque de conteúdos para facilitar a criação de seu projeto, podendo até mesmo comparar algumas informações e jogos para saber, de forma precisa, qual caminho devem seguir ao criar seu jogo.
 
-## 📖 Backlog do Produto
+## 📖 Backlog do Produto <a id = "Backlog"></a>
 
 | Rank | Prioridade | User Stories | Story Points | Sprint |
 |---:|:---:|---|---:|:---:|
@@ -30,15 +48,15 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 12 | Baixo | Como desenvolvedor, busco uma ferramenta que agilize o meu processo de priorização baseado em minhas necessidades. Para eu não perder tempo em sistemas desnecessários. | 40 | 3
 13 | Baixo | Como desenvolvedor, quero uma ferramenta para correlacionar as coisas em comum que todos os jogos bem-sucedidos têm. Para ter uma ideia do que eles estão fazendo de certo. | 20 | 3
 
-## 🥈 DoR - Definition of Ready
+## 🥈 DoR - Definition of Ready <a id = "DoR"></a>
 * User Stories com **Critérios de Aceitação**
 * Foi estimada pela equipe
 
-## 🥇 DoD - Definition of Done
+## 🥇 DoD - Definition of Done <a id = "DoD"></a>
 * Código completo
 * Manual do Usuário 
 
-## 📆 Cronograma das Sprints
+## 📆 Cronograma das Sprints <a id = "Cronograma"></a>
 
 | Sprint          |    Duração   | Status    | Documentação                                     |
 | --------------- | :-----------: | :-----------: | ------------------------------------------------ |
@@ -46,12 +64,16 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 | **SPRINT 2** | 05/10 - 25/10 | Em andamento ⏳ | [MVP 2](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/Sprint2.md) |
 | **SPRINT 3** | 02/11 - 22/11 | Em andamento ⏳ | [MVP 3](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/Sprint3.md) |
 
-## 📕 Manual de instalação
+## 📕 Manual de instalação <a id = "Manual de instalação"></a>
 
-## 🤖 Tecnologias
+## 🤖 Tecnologias <a id = "Tecnologias"></a>
 - Python 3.14+ ([Download](https://www.python.org/downloads/))
+- Telegram
+- Jira
+- Visual Studio Code
+- 
 
-## 🧠 Equipe
+## 🧠 Equipe <a id = "Equipe"></a>
 
 <div align = "center">
   <table>
@@ -123,4 +145,5 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
     </tr>
   </table>
 </div>
+
 
