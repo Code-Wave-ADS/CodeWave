@@ -5,15 +5,15 @@
 </div>
 
 <p align = "center">
-  | <a href ="#Desafio"> Desafio</a>  |
-  <a href ="#Solução"> Solução</a>  |   
-  <a href ="#Backlog"> Backlog do Produto</a>  |
-  <a href ="#DoR">DoR</a>  |
-  <a href ="#DoD">DoD</a>  |
-  <a href ="#Cronograma"> Cronograma de Sprints</a>  |
-  <a href ="#Tecnologias">Tecnologias</a> |
-  <a href ="#Manual de instalação">Manual de Instalação</a>  | 
-  <a href ="#Equipe"> Equipe</a> |
+  | <a href ="#desafio"> Desafio</a>  |
+  <a href ="#solucao"> Solução</a>  |   
+  <a href ="#backlog"> Backlog do Produto</a>  |
+  <a href ="#dor">DoR</a>  |
+  <a href ="#dod">DoD</a>  |
+  <a href ="#cronograma"> Cronograma de Sprints</a>  |
+  <a href ="#tecnologias">Tecnologias</a> |
+  <a href ="#manual">Manual de Instalação</a>  | 
+  <a href ="#equipe"> Equipe</a> |
 </p>
 <BR><BR>
 
@@ -22,15 +22,15 @@
 >Vídeo da ferramenta: [Vídeo](https://youtu.be/gyAvtNEGqXM)🎥
 <BR>
 
-## 🎯 Desafio <a id = "Desafio"></a>
+## 🎯 Desafio <a id = "desafio"></a>
 
 O desafio consiste em desenvolver um chatbot no Telegram que tem como objetivo sanar dúvidas de novos desenvolvedores de jogos da Steam, a fim de facilitar para que eles saibam exatamente quais prioridades devem ter na criação de seus jogos e até mesmo qual é o momento ideal para lançá-los.
 
-## 💡 Solução <a id = "Solução"></a>
+## 💡 Solução <a id = "solucao"></a>
 
 Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pelo chatbot, conseguindo assim um grande leque de conteúdos para facilitar a criação de seu projeto, podendo até mesmo comparar algumas informações e jogos para saber, de forma precisa, qual caminho devem seguir ao criar seu jogo.
 
-## 📖 Backlog do Produto <a id = "Backlog"></a>
+## 📖 Backlog do Produto <a id = "backlog"></a>
 
 | Rank | Prioridade | User Stories | Story Points | Sprint |
 |---:|:---:|---|---:|:---:|
@@ -48,15 +48,15 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 12 | Baixo | Como desenvolvedor, busco uma ferramenta que agilize o meu processo de priorização baseado em minhas necessidades. Para eu não perder tempo em sistemas desnecessários. | 40 | 3
 13 | Baixo | Como desenvolvedor, quero uma ferramenta para correlacionar as coisas em comum que todos os jogos bem-sucedidos têm. Para ter uma ideia do que eles estão fazendo de certo. | 20 | 3
 
-## 🥈 DoR - Definition of Ready <a id = "DoR"></a>
+## 🥈 DoR - Definition of Ready <a id = "dor"></a>
 * User Stories com **Critérios de Aceitação**
 * Foi estimada pela equipe
 
-## 🥇 DoD - Definition of Done <a id = "DoD"></a>
+## 🥇 DoD - Definition of Done <a id = "dod"></a>
 * Código completo
 * Manual do Usuário 
 
-## 📆 Cronograma das Sprints <a id = "Cronograma"></a>
+## 📆 Cronograma das Sprints <a id = "cronograma"></a>
 
 | Sprint          |    Duração   | Status    | Documentação                                     |
 | --------------- | :-----------: | :-----------: | ------------------------------------------------ |
@@ -64,9 +64,9 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 | **SPRINT 2** | 05/10 - 25/10 | Em andamento ⏳ | [MVP 2](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/Sprint2.md) |
 | **SPRINT 3** | 02/11 - 22/11 | Em andamento ⏳ | [MVP 3](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/Sprint3.md) |
 
-## 📕 Manual de instalação <a id = "Manual de instalação"></a>
+## 📕 Manual de instalação <a id = "manual"></a>
 
-## 🤖 Tecnologias <a id = "Tecnologias"></a>
+## 🤖 Tecnologias <a id = "tecnologias"></a>
 - Python ([Link](https://www.python.org/downloads/))
 - Telegram ([Link](https://web.telegram.org/a/))
 - Jira ([Link](https://www.atlassian.com/br/software/jira))
@@ -74,7 +74,7 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 - Ollama ([Link](https://ollama.com/))
 
 
-## 🧠 Equipe <a id = "Equipe"></a>
+## 🧠 Equipe <a id = "equipe"></a>
 
 <div align = "center">
   <table>
