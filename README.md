@@ -67,11 +67,12 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 ## 📕 Manual de instalação <a id = "Manual de instalação"></a>
 
 ## 🤖 Tecnologias <a id = "Tecnologias"></a>
-- Python 3.14+ ([Download](https://www.python.org/downloads/))
-- Telegram
-- Jira
-- Visual Studio Code
-- 
+- Python ([Link](https://www.python.org/downloads/))
+- Telegram ([Link](https://web.telegram.org/a/))
+- Jira ([Link](https://www.atlassian.com/br/software/jira))
+- Visual Studio Code ([Link](https://code.visualstudio.com/))
+- Ollama ([Link](https://ollama.com/))
+
 
 ## 🧠 Equipe <a id = "Equipe"></a>
 
