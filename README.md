@@ -12,7 +12,8 @@
   <a href ="#dod">DoD</a>  |
   <a href ="#cronograma"> Cronograma de Sprints</a>  |
   <a href ="#tecnologias">Tecnologias</a> |
-  <a href ="#manual">Manual de Instalação</a>  | 
+  <a href ="#manual">Manual de Instalação</a>  |
+  <a href ="usuario">Manual de Usuário</a>  |
   <a href ="#equipe"> Equipe</a> |
 </p>
 <BR><BR>
@@ -64,7 +65,7 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 | **SPRINT 2** | 05/10 - 25/10 | Em andamento ⏳ | [MVP 2](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/Sprint2.md) |
 | **SPRINT 3** | 02/11 - 22/11 | Em andamento ⏳ | [MVP 3](https://github.com/Code-Wave-ADS/CodeWave/blob/main/docs/MVP/Sprint3.md) |
 
-## 📕 Manual de instalação <a id = "manual"></a>
+## 📕 Manual de Instalação <a id = "manual"></a>
 
 ## 🤖 Tecnologias <a id = "tecnologias"></a>
 - Python ([Link](https://www.python.org/downloads/))
@@ -72,6 +73,8 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 - Jira ([Link](https://www.atlassian.com/br/software/jira))
 - Visual Studio Code ([Link](https://code.visualstudio.com/))
 - Ollama ([Link](https://ollama.com/))
+
+## 📘 Manual de Usuário <a id = "usuario"></a>
 
 
 ## 🧠 Equipe <a id = "equipe"></a>
