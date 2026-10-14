@@ -67,15 +67,14 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 
 ## 📕 Manual de Instalação <a id = "manual"></a>
 
+## 📘 Manual de Usuário <a id = "usuario"></a>
+
 ## 🤖 Tecnologias <a id = "tecnologias"></a>
 - Python ([Link](https://www.python.org/downloads/))
 - Telegram ([Link](https://web.telegram.org/a/))
 - Jira ([Link](https://www.atlassian.com/br/software/jira))
 - Visual Studio Code ([Link](https://code.visualstudio.com/))
 - Ollama ([Link](https://ollama.com/))
-
-## 📘 Manual de Usuário <a id = "usuario"></a>
-
 
 ## 🧠 Equipe <a id = "equipe"></a>
 
