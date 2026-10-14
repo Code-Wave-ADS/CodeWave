@@ -1,14 +1,35 @@
-# STEAM ROBOT - API 1° Semestre ADS
+# STEAM ROBOT - API 1° Semestre ADS 
 
-## 🎯 Desafio
+
+<div align = "center">
+  
+  ![Logo Wave](../assets/img/logowave.png)
+
+</div>
+
+<p align = "center">
+  | <a href ="#desafio"> Desafio</a>  |
+  <a href ="#solucao"> Solução</a>  |   
+  <a href ="#backlog"> Backlog do Produto</a>  |
+  <a href ="#dor">DoR</a>  |
+  <a href ="#dod">DoD</a>  |
+</p>
+<BR><BR>
+
+>Status da Sprint 2: Em andamento ⏳
+>
+>Vídeo da Sprint 2: [Vídeo ]()🎥
+<BR>
+
+## 🎯 Desafio <a id = "desafio" ></a>
 
 O desafio consiste em desenvolver um chatbot no Telegram que tem como objetivo sanar dúvidas de novos desenvolvedores de jogos da Steam, a fim de facilitar para que eles saibam exatamente quais prioridades devem ter na criação de seus jogos e até mesmo qual é o momento ideal para lançá-los.
 
-## 💡 Solução
+## 💡 Solução <a id = "solucao" ></a>
 
 Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pelo chatbot, conseguindo assim um grande leque de conteúdos para facilitar a criação de seu projeto, podendo até mesmo comparar algumas informações e jogos para saber, de forma precisa, qual caminho devem seguir ao criar seu jogo.
 
-## 📖 Backlog do Produto
+## 📖 Backlog do Produto <a id = "backlog" ></a>
 
 | Rank | Prioridade | User Stories | Story Points | Sprint |
 |---:|:---:|---|---:|:---:|
@@ -19,10 +40,10 @@ Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pe
 8 | Médio | Como desenvolvedor, gostaria de facilmente encontrar o número de jogadores de uma categoria específica, para ter uma ideia de mercado disponível. | 5 | 2
 9 | Médio | Como desenvolvedor, quero uma ferramenta que permita que eu veja a minha margem de lucro real de forma rápida, fácil e escalonável. Para ver a viabilidade de meus preços. | 8 | 2
 
-## 🥈 DoR - Definition of Ready
+## 🥈 DoR - Definition of Ready <a id = "dor" ></a>
 * User Stories com **Critérios de Aceitação**
 * Foi estimada pela equipe
 
-## 🥇 DoD - Definition of Done
+## 🥇 DoD - Definition of Done <a id = "dod" ></a>
 * Código completo
 * Manual do Usuário 
