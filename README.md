@@ -31,6 +31,41 @@ O desafio consiste em desenvolver um chatbot no Telegram que tem como objetivo s
 
 Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pelo chatbot, conseguindo assim um grande leque de conteúdos para facilitar a criação de seu projeto, podendo até mesmo comparar algumas informações e jogos para saber, de forma precisa, qual caminho devem seguir ao criar seu jogo.
 
+## 🏠 Estrutura do projeto
+  
+```
+CodeWave/
+├── SourceCode/
+│   ├── data/
+│   │   ├── steam
+│   │   └── steam.csv
+│   ├── .env
+│   ├── .gitignore
+│   ├── README.md
+│   ├── agente.py
+│   ├── bot.py
+│   ├── requirements.txt
+│   └── steam_analytics.py
+├── docs/
+│   ├── MVP/
+│   │   ├── Sprint1.md
+│   │   ├── Sprint2.md
+│   │   └── Sprint3.md
+│   └───assets/
+│       └── img/
+│           ├──git.png
+│           ├──github.png
+│           ├──jira.png
+│           ├──linkedin.jpg
+│           ├──logowave.png
+│           ├──ollama.png
+│           ├──python.png
+│           ├──telegram.png
+│           ├──vscode.png
+└── README.md
+
+```
+  
 ## 📖 Backlog do Produto <a id = "backlog"></a>
 
 | Rank | Prioridade | User Stories | Story Points | Sprint |
