@@ -65,7 +65,7 @@ CodeWave/
 └── README.md
 
 ```
-  
+
 ## 📖 Backlog do Produto <a id = "backlog"></a>
 
 | Rank | Prioridade | User Stories | Story Points | Sprint |
