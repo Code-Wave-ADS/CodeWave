@@ -15,7 +15,8 @@
   <a href ="#manual">Manual de Instalação</a>  |
   <a href ="usuario">Manual de Usuário</a>  |
   <a href ="#equipe"> Equipe</a> |
-  <a href ="#estrutura"> Estrutura do Projeto |
+  <a href ="#estrutura"> Estrutura do Projeto</a> |
+  <a href ="orientadores"> Orientadores</a> |
 </p>
 <BR><BR>
 
@@ -103,7 +104,25 @@ CodeWave/
 
 ## 📕 Manual de Instalação <a id = "manual"></a>
 
+### Requisitos
+### Instalação
+### Configurando Ollama
+### Inserindo Token
+### Executando o BOT
+
 ## 📘 Manual de Usuário <a id = "usuario"></a>
+
+### Introdução
+O STEAM ROBOT é um assistente inteligente no Telegram projetado para desenvolvedores que desejam criar jogos de sucesso na Steam. Por meio de dados reais e análises de mercado, ele oferece insights estratégicos cruciais, ajudando o desenvolvedor a definir onde focar seus esforços, qual é a melhor janela de lançamento e como maximizar os resultados do seu projeto.
+
+### Público alvo
+**Desenvolvedores experientes:** Pessoas que produzem ou já criaram jogos e buscam planejar o próximo projeto de forma mais estratégica e certeira, ou desejam corrigir erros cometidos na obra atual.
+
+**Desenvolvedores iniciantes:** Profissionais ou entusiastas que estão criando seu primeiro jogo e buscam começar de forma estratégica. O objetivo é garantir o foco nos pontos certos e um lançamento no momento ideal, tudo alinhado ao estilo de projeto que pretendem conceber e à metodologia que desejam utilizar.
+
+### Iniciando BOT
+### Exemplo de dúvidas que são respondidas
+### Oberservações
 
 ## 🤖 Tecnologias <a id = "tecnologias"></a>
 - Python ([Link](https://www.python.org/downloads/))
@@ -111,6 +130,12 @@ CodeWave/
 - Jira ([Link](https://www.atlassian.com/br/software/jira))
 - Visual Studio Code ([Link](https://code.visualstudio.com/))
 - Ollama ([Link](https://ollama.com/))
+
+## 🧑‍🏫 Orientadores <a id = "orientadores"></a>
+
+**Jean Carlos Lourenço Costa**
+
+**Giuliano Araujo Bertoti**
 
 ## 🧠 Equipe <a id = "equipe"></a>
 
