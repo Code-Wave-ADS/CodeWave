@@ -15,6 +15,7 @@
   <a href ="#manual">Manual de Instalação</a>  |
   <a href ="usuario">Manual de Usuário</a>  |
   <a href ="#equipe"> Equipe</a> |
+  <a href ="#estrutura"> Estrutura do Projeto |
 </p>
 <BR><BR>
 
@@ -31,7 +32,7 @@ O desafio consiste em desenvolver um chatbot no Telegram que tem como objetivo s
 
 Com o Steam Robot, os usuários poderão escolher uma das opções fornecidas pelo chatbot, conseguindo assim um grande leque de conteúdos para facilitar a criação de seu projeto, podendo até mesmo comparar algumas informações e jogos para saber, de forma precisa, qual caminho devem seguir ao criar seu jogo.
 
-## 🏠 Estrutura do projeto
+## 🏠 Estrutura do projeto <a id = "estrutura"></a>
   
 ```
 CodeWave/
