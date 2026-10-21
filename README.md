@@ -104,11 +104,56 @@ CodeWave/
 
 ## 📕 Manual de Instalação <a id = "manual"></a>
 
-### Requisitos
-### Instalação
-### Configurando Ollama
-### Inserindo Token
-### Executando o BOT
+Bot do Telegram em Python que usa:
+- python-telegram-bot
+- Ollama
+- Pandas
+- Dataset da Steam
+
+### Estrutura
+
+```text
+SourceCode/
+├── bot.py
+├── agent.py
+├── steam_analytics.py
+├── requirements.txt
+├── .env.example
+├── .gitignore
+└── data/
+    └── steam.csv
+```
+
+### Configuração
+
+1. Crie `.env` na raiz:
+
+```env
+TELEGRAM_TOKEN=SEU_NOVO_TOKEN
+OLLAMA_MODEL=qwen2.5-coder:7b
+STEAM_CSV=data/steam.csv
+```
+
+2. Coloque a base completa em `data/steam.csv`.
+
+3. Instale:
+
+```bash
+pip install -r requirements.txt
+```
+
+4. Baixe o modelo:
+
+```bash
+ollama pull qwen2.5-coder:7b
+```
+
+5. Rode:
+
+```bash
+python bot.py
+```
+
 
 ## 📘 Manual de Usuário <a id = "usuario"></a>
 
@@ -121,8 +166,21 @@ O STEAM ROBOT é um assistente inteligente no Telegram projetado para desenvolve
 **Desenvolvedores iniciantes:** Profissionais ou entusiastas que estão criando seu primeiro jogo e buscam começar de forma estratégica. O objetivo é garantir o foco nos pontos certos e um lançamento no momento ideal, tudo alinhado ao estilo de projeto que pretendem conceber e à metodologia que desejam utilizar.
 
 ### Iniciando BOT
+
 ### Exemplo de dúvidas que são respondidas
+
+- Qual gênero tem mais jogos?<br>
+- Qual gênero está em alta?<br>
+- Qual plataforma aparece mais?<br>
+- Qual gênero tem mais avaliações positivas?<br>
+- Qual é o preço médio dos jogos?<br>
+- Quais jogos têm mais avaliações positivas?
+
 ### Oberservações
+
+- A resposta do bot pode levar alguns segundos.
+- O bot precisa estar em execução para funcionar da forma esperada.
+
 
 ## 🤖 Tecnologias <a id = "tecnologias"></a>
 - Python ([Link](https://www.python.org/downloads/))
