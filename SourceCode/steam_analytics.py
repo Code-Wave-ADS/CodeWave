@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+<<<<<<< HEAD
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -460,6 +461,8 @@ class SteamAnalytics:
 from __future__ import annotations
 
 import json
+=======
+>>>>>>> 5379140 (Vinculação dos principais idiomas ao bot)
 import re
 import unicodedata
 from dataclasses import dataclass

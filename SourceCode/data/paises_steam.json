@@ -1,0 +1,52 @@
+{
+  "titulo": "Estimativa histórica de usuários Steam por país",
+  "metrica": "contas/usuários identificados por país em estimativas de terceiros",
+  "periodo": "estimativas históricas publicadas; não representam uma contagem atual em tempo real",
+  "fonte_nome": "World Population Review, Steam Users by Country; referências históricas atribuídas à SteamSpy/perfis públicos",
+  "fonte_url": "https://worldpopulationreview.com/country-rankings/steam-users-by-country",
+  "metodologia_url": "https://steamcommunity.com/sharedfiles/filedetails/?id=923012519",
+  "observacao": "Estimativas aproximadas de terceiros. A página-fonte apresenta um quadro de 2024 e também contextualiza os dados com perfis públicos até 2021; portanto, o período exato e a comparabilidade devem ser tratados com cautela. Não usar como total atual, jogadores simultâneos ou compradores de jogos.",
+  "atualizado_em": "2026-10-21",
+  "dados_historicos": [
+    {
+      "pais": "Estados Unidos",
+      "usuarios_estimados": 13700000
+    },
+    {
+      "pais": "China",
+      "usuarios_estimados": 11400000
+    },
+    {
+      "pais": "Rússia",
+      "usuarios_estimados": 9500000
+    },
+    {
+      "pais": "Brasil",
+      "usuarios_estimados": 4900000
+    },
+    {
+      "pais": "Alemanha",
+      "usuarios_estimados": 3600000
+    },
+    {
+      "pais": "Canadá",
+      "usuarios_estimados": 3000000
+    },
+    {
+      "pais": "Turquia",
+      "usuarios_estimados": 2600000
+    },
+    {
+      "pais": "França",
+      "usuarios_estimados": 2600000
+    },
+    {
+      "pais": "Reino Unido",
+      "usuarios_estimados": 2600000
+    },
+    {
+      "pais": "Polônia",
+      "usuarios_estimados": 2400000
+    }
+  ]
+}
