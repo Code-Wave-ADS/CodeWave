@@ -63,7 +63,7 @@ ALLOWED_METRICS = {
 
 ALLOWED_AGGREGATIONS = {"count", "sum", "mean", "median", "max", "min"}
 
-ALLOWED_OPERATIONS = {"ranking", "trend", "summary", "top_games", "market", "seasonality"}
+ALLOWED_OPERATIONS = {"ranking", "trend", "summary", "top_games", "market", "seasonality", "age_rating"}
 
 # NOVO: traduz o número do mês para o nome em português
 MONTH_NAMES = {
@@ -72,6 +72,8 @@ MONTH_NAMES = {
     9: "Setembro", 10: "Outubro", 11: "Novembro", 12: "Dezembro",
 }
 
+def _age_label(age: int) -> str:
+    return "Livre" if age == 0 else f"+{age}"
 
 def _text_key(value: Any) -> str:
     """Normaliza texto para comparar termos sem depender de acentos ou hífens."""
@@ -244,6 +246,8 @@ class SteamAnalytics:
             return self._market(plan)
         if operation == "seasonality":  # NOVO
             return self._seasonality(plan)
+        if operation == "age_rating":  # NOVO
+            return self._age_rating(plan)
 
         raise ValueError(f"Operação não suportada: {operation}")
 
@@ -531,6 +535,77 @@ class SteamAnalytics:
         ]
         return AnalysisResult("Sazonalidade: meses com mais vendas estimadas", resultado, notes, plan)
 
+            # ------------------------------------------------------------------
+    # NOVO: classificação etária (porcentagem de jogos por faixa etária)
+    # ------------------------------------------------------------------
+    def _age_rating(self, plan: dict[str, Any]) -> AnalysisResult:
+        """Calcula a porcentagem de jogos em cada faixa etária (required_age)."""
+        # 1) Aplica os filtros
+        df = self._filtered_df(plan["filters"]).copy()
+        total_filtrado = len(df)
+
+        # 2) Se o steam.csv não tiver required_age, busca no arquivo de idades (junta pelo appid)
+        usou_auxiliar = False
+        if "required_age" not in df.columns:
+            age_path = self.path.parent / "steam_required_age.csv"
+            if not age_path.exists():
+                raise FileNotFoundError(
+                    f"Arquivo de faixas etárias não encontrado: {age_path}. "
+                    "Coloque o steam_required_age.csv dentro da pasta data/."
+                )
+            ages = pd.read_csv(age_path, usecols=["appid", "required_age"])
+            ages = ages.drop_duplicates(subset=["appid"])
+            df = df.merge(ages, on="appid", how="left")
+            usou_auxiliar = True
+        df["required_age"] = pd.to_numeric(df["required_age"], errors="coerce")
+        df = df.dropna(subset=["required_age"])
+
+        colunas = ["posição", "faixa_etaria", "idade_minima", "jogos", "percentual"]
+        if df.empty:
+            return AnalysisResult(
+                "Classificação etária sem dados",
+                pd.DataFrame(columns=colunas),
+                ["Nenhum registro disponível após os filtros."],
+                plan,
+            )
+
+        # 3) Conta quantos jogos existem em cada idade mínima
+        faixas = (
+            df.groupby("required_age")
+            .size()
+            .reset_index(name="jogos")
+            .rename(columns={"required_age": "idade_minima"})
+        )
+        faixas["idade_minima"] = faixas["idade_minima"].astype(int)
+
+        # 4) Calcula a participação de cada faixa no total (em %)
+        total = float(faixas["jogos"].sum()) or 1.0
+        faixas["percentual"] = (faixas["jogos"] / total * 100).round(2)
+
+        # 5) Coloca o nome da faixa ao lado da idade (0 vira "Livre")
+        faixas.insert(0, "faixa_etaria", faixas["idade_minima"].map(_age_label))
+
+        # 6) Ordena (maior para menor por padrão) e limita ao top_n
+        ascending = plan["order"] == "asc"
+        resultado = (
+            faixas.sort_values("jogos", ascending=ascending)
+            .head(plan["top_n"])
+            .reset_index(drop=True)
+        )
+        resultado.insert(0, "posição", range(1, len(resultado) + 1))
+
+        notes = [
+            f"Foram considerados {len(df)} de {total_filtrado} jogos; os demais não têm required_age na base.",
+            "required_age é a idade mínima para jogar informada na base; 0 significa sem restrição e aparece como Livre.",
+            "O percentual é a participação de cada faixa no total de jogos considerados.",
+        ]
+        if usou_auxiliar:
+            notes.append(
+                "ATENÇÃO: a idade mínima vem de um arquivo auxiliar com menos jogos que a base principal; "
+                "os percentuais valem apenas para os jogos que aparecem nos dois arquivos."
+            )
+        return AnalysisResult("Porcentagem de jogos por faixa etária", resultado, notes, plan)
+    
     def _market(self, plan: dict[str, Any]) -> AnalysisResult:
         """Estima o público potencial de uma categoria usando owners por jogo.
 
