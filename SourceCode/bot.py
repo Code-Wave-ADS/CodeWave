@@ -74,8 +74,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             "• Qual é o preço médio dos jogos?\n"
             "• Quais jogos têm mais avaliações positivas?\n"
             "• Qual ano teve mais lançamentos?\n"
-            "• Quais as épocas com maior número de vendas?\n\n"
-            "• Quais ao hardware dos usuários?\n\n"
+            "• Quais as épocas com maior número de vendas?\n"
+            "• Quais ao hardware dos usuários?\n"
+            "• Qual a porcentagem de jogos por faixa etária?\n\n"
             "Também posso responder dúvidas gerais de programação.\n"
             "Use /status para verificar a base e o Ollama."
         ),

@@ -18,7 +18,7 @@ Retorne SOMENTE JSON válido, sem markdown.
 Schema:
 {
   "scope": "steam_analysis" | "dev_support",
-  "operation": "ranking" | "trend" | "summary" | "top_games" | "market" | "seasonality",
+    "operation": "ranking" | "trend" | "summary" | "top_games" | "market" | "seasonality" | "age_rating",
   "term": null,
   "dimension": "genres" | "platforms" | "categories" | "steamspy_tags" | "developer" | "publisher" | "release_year" | "name",
   "metric": "count" | "positive_ratings" | "negative_ratings" | "rating_ratio" | "average_playtime" | "median_playtime" | "price" | "owners_estimate" | "achievements",
@@ -61,12 +61,16 @@ Como interpretar:
 - "em que mês devo fazer marketing?" => operation seasonality, top_n 12, order desc.
 - "qual o melhor mês para divulgar um jogo?" => operation seasonality, top_n 12, order desc.
 - "quais meses têm mais vendas de jogos de terror?" => operation seasonality, top_n 12, filters.steamspy_tags "Horror".
+- "qual a porcentagem de jogos por faixa etária?" => operation age_rating, top_n 25, order desc.
+- "quantos jogos são livres para todas as idades?" => operation age_rating, top_n 25, order desc.
+- "qual a classificação etária dos jogos de terror?" => operation age_rating, top_n 25, order desc, filters.steamspy_tags "Horror".
 - Perguntas gerais de programação sem relação com a base => scope dev_support.
 
 Para perguntas sobre tamanho de mercado, quantidade de jogadores, público potencial ou número de donos de uma categoria/tag/gênero, use operation=market e preencha term somente com a categoria solicitada.
 A base não contém jogadores ativos atuais nem pessoas únicas entre vários jogos; market deve usar owners estimados por título e a resposta precisa deixar essa limitação explícita.
 Para perguntas sobre épocas, meses, estações, sazonalidade ou melhor momento para fazer marketing/divulgação, use operation=seasonality. Se o usuário citar uma categoria, coloque-a em filters (tags e categorias em inglês, como "Horror" ou "Indie").
 Prefira análise da base quando a pergunta falar de jogos, Steam, gênero, plataforma, avaliações, preço, lançamentos, desenvolvedores, publishers, tags, donos ou tempo jogado.
+Para perguntas sobre classificação indicativa, faixa etária, idade mínima ou público por idade, use operation=age_rating.
 """.strip()
 
 
@@ -83,6 +87,7 @@ Quando receber um RESULTADO CALCULADO PELO PANDAS:
 - Para tendência, explique que "em alta" representa crescimento dentro da base e do período comparado.
 - Para análises de mercado, deixe claro que owners são faixas estimadas de proprietários por jogo, não jogadores ativos nem pessoas únicas; a soma pode contar uma mesma pessoa em vários jogos. Apresente isso como indicador aproximado, não como número exato de mercado.
 - Para sazonalidade, cite os meses do topo com o percentual de cada um e a quantidade de jogos lançados. Deixe claro que o mês é o de LANÇAMENTO dos jogos e que as vendas são estimadas por owners, então é um indicador de época forte e não vendas reais por mês. Pode sugerir planejar o marketing com antecedência para os meses do topo, sem inventar números.
+- Para classificação etária, cite cada faixa com seu percentual e a quantidade de jogos, no formato "Livre - X%" e "+16 - Y%". Explique que Livre significa sem idade mínima (required_age = 0) e que a faixa vem do campo required_age. Se as observações indicarem cobertura parcial, deixe isso claro na resposta.
 - Se o resultado estiver vazio, diga que os dados não permitem responder.
 
 Para dúvidas gerais de desenvolvimento, dê orientação prática e código pequeno quando útil.
