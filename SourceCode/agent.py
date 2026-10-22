@@ -1,8 +1,8 @@
 from __future__ import annotations
-
+import pandas as pd
 import json
 from typing import Any
-
+import os
 import ollama
 
 from steam_analytics import AnalysisResult, SteamAnalytics
@@ -156,3 +156,23 @@ class SteamAgent:
 
         result = self.analytics.analyze(plan)
         return self.answer_from_analysis(question, result), result.plan
+    
+    for dirname, _, filenames in os.walk('SourceCode/data' ):
+        for filename in filenames:
+            print(os.path.join(dirname, filename))
+
+
+gpuBenchMark = pd.read_csv('SourceCode/data/gpuMerged.csv')
+rawDataSteam = pd.read_csv('SourceCode/data/gpuMerged.csv')
+
+steamGPUsData = rawDataSteam.reset_index(drop = True)
+
+if 'category' in steamGPUsData.columns:
+        steamGPUsData = steamGPUsData[steamGPUsData['category'] == 'Video Card Description'].reset_index(drop = True)
+else:
+      raise KeyError("The 'categories column is missing from the dataset.")
+     
+print(steamGPUsData['name'])
+
+gpuBenchMark['gpuName'] = gpuBenchMark['Brand'] + ' ' + gpuBenchMark['Model']
+print(gpuBenchMark)
