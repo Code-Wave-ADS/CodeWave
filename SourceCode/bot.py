@@ -73,13 +73,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             "• Qual gênero tem mais avaliações positivas?\n"
             "• Qual é o preço médio dos jogos?\n"
             "• Quais jogos têm mais avaliações positivas?\n"
-<<<<<<< HEAD
-            "• Qual ano teve mais lançamentos?\n\n"
-=======
             "• Qual ano teve mais lançamentos?\n"
-            "• Quais países têm mais usuários Steam?\n\n"
-            "O ranking por país usa estimativas históricas de terceiros e informa a fonte e as limitações.\n"
->>>>>>> 5379140 (Vinculação dos principais idiomas ao bot)
+            "• Quais as épocas com maior número de vendas?\n\n"
             "Também posso responder dúvidas gerais de programação.\n"
             "Use /status para verificar a base e o Ollama."
         ),
