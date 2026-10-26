@@ -3,6 +3,8 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import re
+import time
 from pathlib import Path
 
 import ollama
@@ -78,6 +80,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             "• Quais ao hardware dos usuários?\n"
             "• Qual a porcentagem de jogos por faixa etária?\n\n"
             "Também posso responder dúvidas gerais de programação.\n"
+            "• Quanto posso faturar se meu jogo de RPG vender bem?\n"
+            "• Qual o lucro de um Adventure com orçamento de 100000?\n"
+            "• Qual a receita de um jogo de Puzzle?\n"
             "Use /status para verificar a base e o Ollama."
         ),
     )
@@ -112,10 +117,25 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not question:
         return
 
+    # A short budget reply can continue the previous profit question for this user.
+    pending = context.user_data.pop("profit_pending", None)
+    if pending and time.monotonic() - pending["at"] < 900:
+        short_budget = re.fullmatch(
+            r"\s*(?:(?:meu |o )?(?:orçamento|orcamento|custo|gasto)(?: (?:é|e|seria|foi|de))?\s*)?"
+            r"(?:R\$|US\$|\$)?\s*\d[\d.,]*(?:\s*(?:mil|milhão|milhões|milhao|milhoes|k))?\s*",
+            question, re.IGNORECASE,
+        )
+        if short_budget:
+            cost_question = (question if re.search(r"orçamento|orcamento|custo|gasto", question, re.IGNORECASE)
+                             else f"orçamento de {question}")
+            question = f"Qual o lucro de um jogo de {pending['term']}? {cost_question}"
+
     await context.bot.send_chat_action(chat_id=chat_obj.id, action=ChatAction.TYPING)
 
     try:
         answer, plan = await asyncio.to_thread(AGENT.answer, question)
+        if plan and plan.get("operation") == "profit_estimate" and plan.get("budget") is None:
+            context.user_data["profit_pending"] = {"term": plan["term"], "at": time.monotonic()}
         if plan:
             logger.info("Plano da pergunta %r: %s", question, plan)
     except FileNotFoundError as exc:

@@ -1,11 +1,15 @@
 from __future__ import annotations
 import pandas as pd
 import json
+import math
+import re
+import unicodedata
 from typing import Any
 import os
 import ollama
 
 from steam_analytics import AnalysisResult, SteamAnalytics
+from steam_countries import consultar_ranking_paises
 
 
 PLANNER_PROMPT = """
@@ -74,6 +78,18 @@ Para perguntas sobre classificação indicativa, faixa etária, idade mínima ou
 """.strip()
 
 
+# Add-on guidance. Existing planning examples above are left unchanged.
+PLANNER_PROMPT += """
+- Para previsão de receita, lucro, margem, orçamento, ponto de equilíbrio ou jogos que vendem bem, use operation=profit_estimate, term igual ao gênero/tag identificado e dimension=genres ou steamspy_tags.
+- "lucro medio de um jogo de RPG" => profit_estimate, term RPG, dimension genres, budget null.
+- "lucro de jogo de quebra-cabeça" => profit_estimate, term Puzzle, dimension steamspy_tags.
+- Inclua budget apenas se o usuário fornecer custos explicitamente; não invente orçamentos.
+- Use platform_fee=0.30, paid_unit_share=0.85, price_realization=0.80, refund_rate=0.05, sales_tax_rate=0 salvo alteração explícita do usuário.
+- Valores monetários devem estar na mesma unidade; nunca faça conversão implícita de R$ ou US$.
+- O percentil 90 dos owners representa um cenário forte, não vendas confirmadas.
+"""
+
+
 ANSWER_PROMPT = """
 Você é um bot de suporte para desenvolvedores que também analisa um dataset histórico da Steam.
 Responda em português do Brasil.
@@ -94,7 +110,129 @@ Para dúvidas gerais de desenvolvimento, dê orientação prática e código peq
 """.strip()
 
 
+ANSWER_PROMPT += """
+- Para profit_estimate, indique amostra de jogos, preço mediano, faixa central, owners típicos e P90, e cenários de receita.
+- Sem custos informados, NÃO estime lucro ou margem; peça orçamento na mesma unidade monetária do CSV.
+- Com orçamento, apresente margem como simulação com premissas explícitas e taxa Steam de 30% (configurável).
+- Owners não equivalem a vendas verificadas; o CSV não confirma moeda.
+"""
+
+
+def _normal_text(value: str) -> str:
+    text = unicodedata.normalize("NFKD", value.casefold())
+    return "".join(char for char in text if not unicodedata.combining(char))
+
+def _parse_explicit_budget(question: str) -> tuple[float | None, bool]:
+    """Extract only amounts explicitly tied to cost/budget language.
+
+    Returns (amount, currency_problem). A BRL/USD-labelled cost must not be
+    compared against the dataset's unspecified price currency.
+    """
+    q = _normal_text(question)
+    pattern = (
+        r"\b(?:orcamento|custos?|investimento|investir|investi|gastar|gastei|gasto|"
+        r"gastos?|verba|budget)\b"
+        r"(?:\s+(?:total|de|do|da|ate|estimado|previsto|foi|seria|no|valor))*"
+        r"\s*(r\$|us\$|\$|eur|€)?\s*"
+        r"(\d+(?:[.,]\d{3})*(?:[.,]\d{1,2})?)"
+        r"(?:\s*(milhoes|milhao|mil|k))?\b"
+    )
+    match = re.search(pattern, q)
+    if not match:
+        return None, False
+    if match.group(1):
+        return None, True
+    raw, suffix = match.group(2), match.group(3)
+    if "." in raw and "," in raw:
+        raw = raw.replace(".", "").replace(",", ".") if raw.rfind(",") > raw.rfind(".") else raw.replace(",", "")
+    elif re.fullmatch(r"\d{1,3}(?:[.,]\d{3})+", raw):
+        raw = raw.replace(",", "").replace(".", "")
+    else:
+        raw = raw.replace(",", ".")
+    number = float(raw)
+    factor = {"mil": 1_000, "k": 1_000, "milhao": 1_000_000, "milhoes": 1_000_000}.get(suffix, 1)
+    return number * factor, False
+
+def _looks_like_profit_question(question: str) -> bool:
+    q = _normal_text(question)
+    return bool(re.search(
+        r"\b(?:lucro|lucratividade|margem|rentabilidade|receita|faturamento|"
+        r"orcamento|rentavel|retorno financeiro|quanto (?:eu )?(?:ganharia|ganhar|faturaria|lucraria)|"
+        r"vender bem|vender muito|vendas estimadas)\b",
+        q,
+    ))
+
+def _format_number(value: float, decimals: int = 0) -> str:
+    if value is None or not math.isfinite(float(value)):
+        return "n/d"
+    return f"{value:,.{decimals}f}".replace(",", "_").replace(".", ",").replace("_", ".")
+
+def _format_profit_answer(result: AnalysisResult, currency_warning: bool = False) -> str:
+    """Fixed, calculation-only response: no numeric hallucinations, no Ollama call."""
+    rows = result.table.set_index("scenario")
+    typical = rows.loc["typical_p50"]
+    strong = rows.loc["sells_well_p90"]
+    breakout = rows.loc["breakout_p95"]
+    term = result.plan["term"]
+    category = "gênero" if result.plan["dimension"] == "genres" else "tag"
+    budget = result.plan.get("budget")
+    year_min = result.plan["filters"].get("year_min")
+    year_max = result.plan["filters"].get("year_max")
+    lines = [
+        f"Estimativa para jogos com {category} {term} (Steam, lançamentos de {year_min} a {year_max}):",
+        f"• Amostra: {_format_number(int(strong['cohort_games']))} jogos pagos.",
+        f"• Preço mediano: {_format_number(strong['genre_median_list_price'], 2)} por cópia; faixa central: {_format_number(strong['genre_price_q25'], 2)}–{_format_number(strong['genre_price_q75'], 2)}.",
+        f"• Owners estimados: média {_format_number(strong['mean_estimated_owners'])}, mediana {_format_number(typical['owners_midpoint_proxy'])}; 'vende bem' (P90) {_format_number(strong['owners_midpoint_proxy'])}.",
+        "",
+    ]
+    if budget is None:
+        lines += [
+            "Receita estimada para o desenvolvedor (após deduções presumidas):",
+            f"• Cenário típico (P50): {_format_number(typical['developer_revenue_proxy'], 2)}",
+            f"• Se vender bem (P90): {_format_number(strong['developer_revenue_proxy'], 2)}",
+            f"• Excelente desempenho (P95): {_format_number(breakout['developer_revenue_proxy'], 2)}",
+            "",
+            "Lucro e margem NÃO podem ser calculados sem os custos. Qual é o seu orçamento total de desenvolvimento + marketing (na mesma unidade monetária do CSV)?",
+        ]
+    else:
+        lines += [
+            f"Com orçamento total de {_format_number(budget, 2)}:",
+            f"• Típico (P50): lucro {_format_number(typical['profit_proxy'], 2)}; margem {_format_number(typical['operating_margin_percent'], 2)}%.",
+            f"• Se vender bem (P90): lucro {_format_number(strong['profit_proxy'], 2)}; margem {_format_number(strong['operating_margin_percent'], 2)}%.",
+            f"• Excelente desempenho (P95): lucro {_format_number(breakout['profit_proxy'], 2)}; margem {_format_number(breakout['operating_margin_percent'], 2)}%.",
+        ]
+    if currency_warning:
+        lines += ["", "Você informou custos com uma moeda explícita. Não os subtraí: a moeda de preços no CSV não está identificada e não fiz conversão implícita."]
+    paid = result.plan["paid_unit_share"]
+    realized = result.plan["price_realization"]
+    refunds = result.plan["refund_rate"]
+    steam_fee = result.plan["platform_fee"]
+    tax = result.plan["sales_tax_rate"]
+    lines += [
+        "",
+        f"Hipóteses: {paid:.0%} dos owners representariam vendas pagas; preço realizado {realized:.0%} da tabela; "
+        f"{refunds:.0%} de reembolsos/perdas; {steam_fee:.0%} de taxa Steam; {tax:.0%} de tributos sobre vendas.",
+        "ATENÇÃO: owners são estimativas históricas por jogo, NÃO vendas verificadas, jogadores ativos ou previsão garantida. Valores na unidade monetária não identificada do CSV; sem impostos sobre lucro, royalties ou despesas não orçadas.",
+    ]
+    return "\n".join(lines)
+
 class SteamAgent:
+
+    @staticmethod
+    def _pergunta_sobre_ranking_de_paises(question: str) -> bool:
+        """Identify country rankings, provided by the existing country dataset.
+
+        Kept deliberately narrow so it does not interfere with genre rankings or
+        game profitability questions.
+        """
+        normalized = _normal_text(question)
+        return all((
+            re.search(r"\bsteam\b", normalized),
+            re.search(r"\b(?:pais|paises)\b", normalized),
+            re.search(r"\b(?:jogadores|usuarios|contas)\b", normalized),
+            re.search(r"\b(?:ranking|mais|maiores|top)\b", normalized),
+        ))
+
     def __init__(self, analytics: SteamAnalytics, model: str):
         self.analytics = analytics
         self.model = model
@@ -155,9 +293,36 @@ class SteamAgent:
         return response.message.content.strip()
 
     def answer(self, question: str) -> tuple[str, dict[str, Any] | None]:
+        # Add-on: historical Steam country ranking, without interfering with other questions.
+        if self._pergunta_sobre_ranking_de_paises(question):
+            return consultar_ranking_paises(), {"operation": "country_ranking"}
+
+        # Fast path: interpret common natural-language profitability questions locally.
+        if _looks_like_profit_question(question):
+            category = self.analytics.resolve_profit_category(question, from_question=True)
+            if category:
+                budget, wrong_currency = _parse_explicit_budget(question)
+                profit_plan = {
+                    "scope": "steam_analysis", "operation": "profit_estimate",
+                    "term": category[0], "dimension": category[1], "budget": budget,
+                }
+                profit_result = self.analytics.analyze(profit_plan)
+                return _format_profit_answer(profit_result, wrong_currency), profit_result.plan
+
         plan = self.make_plan(question)
         if str(plan.get("scope", "steam_analysis")).strip().lower() == "dev_support":
             return self.answer_dev_support(question), plan
+
+        # Add-on: route unfamiliar profit wording through Ollama's planner.
+        if plan.get("operation") == "profit_estimate":
+            category = self.analytics.resolve_profit_category(str(plan.get("term") or ""))
+            if category is None:
+                return "Informe um gênero ou tag Steam, por exemplo RPG, Adventure ou Puzzle.", plan
+            plan["term"], plan["dimension"] = category
+            budget, wrong_currency = _parse_explicit_budget(question)
+            plan["budget"] = budget  # Ignore any budget hallucinated by the LLM.
+            result = self.analytics.analyze(plan)
+            return _format_profit_answer(result, wrong_currency), result.plan
 
         result = self.analytics.analyze(plan)
         return self.answer_from_analysis(question, result), result.plan

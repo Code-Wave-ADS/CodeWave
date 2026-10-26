@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 import unicodedata
 from dataclasses import dataclass
@@ -65,6 +66,9 @@ ALLOWED_AGGREGATIONS = {"count", "sum", "mean", "median", "max", "min"}
 
 ALLOWED_OPERATIONS = {"ranking", "trend", "summary", "top_games", "market", "seasonality", "age_rating"}
 
+# Additional analytical operation (all existing operations remain intact).
+ALLOWED_OPERATIONS.add("profit_estimate")
+
 # NOVO: traduz o número do mês para o nome em português
 MONTH_NAMES = {
     1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril",
@@ -114,6 +118,17 @@ CATEGORY_ALIASES = {
     "defesa de torres": "tower defense",
     "construcao de cidades": "city builder",
 }
+
+
+# Additional Portuguese names for Steam classifications used in profit projections.
+CATEGORY_ALIASES.update({
+    "quebra cabeca": "puzzle",
+    "quebra cabecas": "puzzle",
+    "puzzles": "puzzle",
+    "rpg de acao": "action rpg",
+    "rpg tatico": "tactical rpg",
+    "interpretacao de papeis": "rpg",
+})
 
 
 @dataclass
@@ -186,6 +201,64 @@ class SteamAnalytics:
             self.df["positive_ratings"] / ratings_total.where(ratings_total > 0)
         ) * 100
 
+        self._profit_label_cache: dict[str, tuple[str, str]] | None = None
+
+    def _profit_labels(self) -> dict[str, tuple[str, str]]:
+        """Look up REAL Steam genres/tags, not free-form labels invented by the LLM.
+
+        Catalog is computed once. Prefer genre labels over identically named tags.
+        Ignore extremely rare/noisy tag values (some dataset rows contain raw dicts).
+        """
+        if self._profit_label_cache is None:
+            catalog: dict[str, tuple[str, str]] = {}
+            for column, minimum_count in (("genres", 1), ("steamspy_tags", 30)):
+                if column not in self.df.columns:
+                    continue
+                series = self.df[column].fillna("").astype(str).str.split(";").explode().str.strip()
+                for label, count in series.value_counts().items():
+                    if count < minimum_count or not 2 <= len(label) <= 45:
+                        continue
+                    if any(char in label for char in ("{", "}", "'", '"', "(", ")")):
+                        continue
+                    key = _text_key(label)
+                    if key and key not in catalog:
+                        catalog[key] = (label, column)
+            self._profit_label_cache = catalog
+        return self._profit_label_cache
+
+    def resolve_profit_category(
+        self, text: str, *, dimension: str | None = None, from_question: bool = False
+    ) -> tuple[str, str] | None:
+        """Return (dataset label, genre-or-tag column) or None.
+
+        If from_question=True, find full category tokens inside Portuguese prose.
+        Short partial substrings (e.g. 'RPG' inside 'JRPG') cannot match.
+        """
+        catalog = self._profit_labels()
+        key = _text_key(text)
+        if not key:
+            return None
+        preferred = DIMENSION_ALIASES.get(str(dimension or "").casefold(), dimension)
+        aliases = {**{name: name for name in catalog}, **CATEGORY_ALIASES}
+        if not from_question:
+            target = _text_key(aliases.get(key, key))
+            choice = catalog.get(target)
+            if choice and (preferred not in {"genres", "steamspy_tags"} or choice[1] == preferred):
+                return choice
+            # Fall back to a tag with identical text if a genre was selected.
+            return None
+        hits: list[tuple[int, int, str, str]] = []
+        for candidate, target in aliases.items():
+            if len(candidate) < 3 or not re.search(r"(?<![a-z0-9])" + re.escape(candidate) + r"(?![a-z0-9])", key):
+                continue
+            choice = catalog.get(_text_key(target))
+            if choice:
+                hits.append((len(candidate), int(choice[1] == "genres"), *choice))
+        if not hits:
+            return None
+        best = max(hits, key=lambda value: (value[0], value[1]))
+        return best[2], best[3]
+
     @staticmethod
     def _owners_bounds(value: Any) -> tuple[float, float] | None:
         """Lê faixas como '0-20000' e '10,000 .. 20,000'."""
@@ -234,6 +307,8 @@ class SteamAnalytics:
         plan = self._normalize_plan(raw_plan)
         operation = plan["operation"]
 
+        if operation == "profit_estimate":
+            return self._profit_estimate(plan)
         if operation == "summary":
             return self._summary(plan)
         if operation == "trend":
@@ -830,3 +905,159 @@ class SteamAnalytics:
             )
 
         return AnalysisResult(f"Tendência de {dimension}", result, notes, plan)
+
+    def _profit_estimate(self, plan: dict[str, Any]) -> AnalysisResult:
+        """Scenario analysis from genre-level Steam owner *ranges*, NOT observed sales.
+
+        - Cohort: paid games in a genre, defaulting to the last three release years
+          that ended >=3 years before the dataset's newest year (2021-2023
+          for a dataset ending in 2026).
+        - "Sells well": 90th-percentile midpoint of estimated owner ranges.
+        - Prices: paid games' genre median (with Q1/Q3 for context).
+        - Profit and margin: only when the caller supplies a budget in the
+          same currency/units as the CSV price column.
+        """
+        genre = str(plan.get("term") or "").strip()
+        if not genre:
+            raise ValueError("Informe um gênero (exemplo: Indie) para estimar receita.")
+        genre_key = CATEGORY_ALIASES.get(_text_key(genre), _text_key(genre))
+
+        filters = dict(plan.get("filters") or {})
+        if filters.get("free_only") is True:
+            raise ValueError("A estimativa de vendas não aceita free_only; use jogos pagos.")
+        # Compare similarly aged titles rather than mixing brand-new releases
+        # with games that accumulated owners over decades.
+        if filters.get("year_min") is None and filters.get("year_max") is None:
+            if self.max_year is not None:
+                last_mature_year = self.max_year - 3
+                filters["year_min"] = last_mature_year - 2
+                filters["year_max"] = last_mature_year
+
+        dimension = str(plan.get("dimension") or "genres")
+        if dimension not in {"genres", "steamspy_tags"}:
+            dimension = "genres"
+        # Resolve a Portuguese alias ("aventura", "quebra-cabeça") to a real
+        # catalog label. Fall back to tags if the name isn't a real genre.
+        resolved = self.resolve_profit_category(genre, dimension=dimension)
+        if resolved is None:
+            resolved = self.resolve_profit_category(genre)
+        if resolved is None:
+            raise ValueError(f"Categoria {genre!r} não encontrada nos gêneros/tags Steam da base.")
+        genre, dimension = resolved
+        genre_key = _text_key(genre)
+        # Keep requested filters except for the dimension of the sought category.
+        filters.pop(dimension, None)
+        filters["paid_only"] = True
+        games = self._filtered_df(filters)
+        tokens = games[dimension].fillna("").astype(str).str.split(";")
+        mask = tokens.apply(lambda terms: any(_text_key(value) == genre_key for value in terms))
+        games = games.loc[mask, ["appid", "price", "owners_estimate"]].drop_duplicates("appid")
+        games["price"] = pd.to_numeric(games["price"], errors="coerce")
+        games["owners_estimate"] = pd.to_numeric(games["owners_estimate"], errors="coerce")
+        games = games.dropna(subset=["price", "owners_estimate"])
+        games = games[(games["price"] > 0) & (games["owners_estimate"] >= 0)]
+        if len(games) < 30:
+            raise ValueError(
+                f"Amostra insuficiente para {genre!r}: {len(games)} jogos pagos com dados válidos "
+                "(mínimo 30). Amplie os anos ou escolha outro gênero."
+            )
+
+        def number(name: str, default: float | None, low: float, high: float) -> float | None:
+            value = plan.get(name, default)
+            if value is None or value == "":
+                if default is None:
+                    return None
+                value = default
+            try:
+                result = float(value)
+            except (TypeError, ValueError) as exc:
+                raise ValueError(f"O parâmetro {name} deve ser numérico.") from exc
+            if not math.isfinite(result) or not (low <= result <= high):
+                raise ValueError(f"{name} deve estar entre {low} e {high}.")
+            return result
+
+        budget = number("budget", None, 0, 1e12)
+        paid_unit_share = number("paid_unit_share", 0.85, 0, 1)
+        price_realization = number("price_realization", 0.80, 0, 1)
+        refund_rate = number("refund_rate", 0.05, 0, 0.99)
+        platform_fee = number("platform_fee", 0.30, 0, 0.99)
+        sales_tax_rate = number("sales_tax_rate", 0.0, 0, 0.99)
+
+        prices = games["price"]
+        owners = games["owners_estimate"]
+        price_q25, median_price, price_q75 = (float(prices.quantile(q)) for q in (0.25, 0.50, 0.75))
+        owner_quantiles = {label: float(owners.quantile(q)) for label, q in
+                           (("typical_p50", 0.50), ("sells_well_p90", 0.90), ("breakout_p95", 0.95))}
+
+        # These are declared modelling assumptions, not observed sales rates.
+        per_owner_net = (median_price * paid_unit_share * price_realization
+                         * (1 - refund_rate) * (1 - sales_tax_rate) * (1 - platform_fee))
+        rows = []
+        for scenario, owner_count in owner_quantiles.items():
+            paid_units = owner_count * paid_unit_share
+            list_revenue = paid_units * median_price
+            developer_revenue = owner_count * per_owner_net
+            profit = (developer_revenue - budget) if budget is not None else None
+            margin = (profit / developer_revenue * 100) if (
+                profit is not None and developer_revenue > 0
+            ) else None
+            rows.append({
+                "scenario": scenario,
+                "owners_midpoint_proxy": round(owner_count),
+                "paid_units_proxy": round(paid_units),
+                "genre_median_list_price": round(median_price, 2),
+                "genre_price_q25": round(price_q25, 2),
+                "genre_price_q75": round(price_q75, 2),
+                "cohort_games": len(games),
+                "mean_estimated_owners": round(float(owners.mean())),
+                "list_revenue_proxy": round(list_revenue, 2),
+                "developer_revenue_proxy": round(developer_revenue, 2),
+                "total_project_cost": round(budget, 2) if budget is not None else None,
+                "profit_proxy": round(profit, 2) if profit is not None else None,
+                "operating_margin_percent": round(margin, 2) if margin is not None else None,
+            })
+
+        break_even_owners = math.ceil(budget / per_owner_net) if (
+            budget is not None and per_owner_net > 0
+        ) else None
+        plan["term"] = genre
+        plan["dimension"] = dimension
+        plan["filters"] = filters
+        plan["budget"] = budget
+        plan["paid_unit_share"] = paid_unit_share
+        plan["price_realization"] = price_realization
+        plan["refund_rate"] = refund_rate
+        plan["platform_fee"] = platform_fee
+        plan["sales_tax_rate"] = sales_tax_rate
+
+        notes = [
+            f"Amostra: {len(games):,} jogos pagos na classificação {genre!r} ({dimension}); filtros aplicados: {filters}.",
+            f"Preço de tabela: Q1={price_q25:.2f}; mediana={median_price:.2f}; Q3={price_q75:.2f} (unidades monetárias do CSV).",
+            f"Owners por título (ponto médio da faixa SteamSpy): média={owners.mean():.0f}; "
+            f"mediana={owners.median():.0f}; p90={owners.quantile(.90):.0f}; p95={owners.quantile(.95):.0f}.",
+            "'Vender bem' significa atingir o percentil 90 de owners_estimados da amostra, "
+            "não uma previsão da probabilidade de sucesso.",
+            f"Hipóteses não observadas: fração de owners que corresponde a vendas pagas={paid_unit_share:.0%}; "
+            f"preço efetivo médio/preço de tabela={price_realization:.0%}; "
+            f"devoluções/perdas={refund_rate:.0%}; ajuste aproximado por tributos sobre vendas={sales_tax_rate:.0%}; "
+            f"taxa da plataforma={platform_fee:.0%} (fixa neste modelo).",
+            f"Orçamento total fornecido={budget:.2f}; owners-proxy necessários para cobrir custos={break_even_owners:,}."
+            if budget is not None and break_even_owners is not None
+            else "Sem orçamento/custos fornecidos: só é possível estimar receita, não lucro ou margem.",
+            "Orçamento e preços DEVEM estar na mesma moeda. O CSV não declara uma moeda confiável; "
+            "não há conversão cambial automática.",
+            "Owners são faixas estimadas por título (incluindo possíveis chaves e outras aquisições), "
+            "NÃO cópias vendidas verificadas, jogadores simultâneos ou usuários ativos; "
+            "o cenário aplica hipóteses, não dados reais de descontos/devoluções.",
+            "As distribuições se referem a proprietários acumulados de títulos existentes, "
+            "não a vendas anuais nem aos primeiros 12 meses após lançamento; um gênero muito amplo "
+            "como Indie pode incluir jogos bastante diferentes.",
+            "Não inclui publisher, royalties, despesas continuadas ou impostos sobre renda; "
+            "inclua custos relevantes no orçamento. A alíquota de plataforma está fixa e não modela faixas especiais.",
+        ]
+        return AnalysisResult(
+            f"Cenários financeiros aproximados para jogos {genre} ({dimension})",
+            pd.DataFrame(rows),
+            notes,
+            plan,
+        )
