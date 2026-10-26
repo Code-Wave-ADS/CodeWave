@@ -1,8 +1,8 @@
 from __future__ import annotations
-
+import pandas as pd
 import json
 from typing import Any
-
+import os
 import ollama
 
 from steam_analytics import AnalysisResult, SteamAnalytics
@@ -18,7 +18,8 @@ Retorne SOMENTE JSON válido, sem markdown.
 Schema:
 {
   "scope": "steam_analysis" | "dev_support",
-  "operation": "ranking" | "trend" | "summary" | "top_games" | "controller_support",
+    "operation": "ranking" | "trend" | "summary" | "top_games" | "market" | "seasonality" | "age_rating",
+  "term": null,
   "dimension": "genres" | "platforms" | "categories" | "steamspy_tags" | "developer" | "publisher" | "release_year" | "name",
   "metric": "count" | "positive_ratings" | "negative_ratings" | "rating_ratio" | "average_playtime" | "median_playtime" | "price" | "owners_estimate" | "achievements",
   "aggregation": "count" | "sum" | "mean" | "median" | "max" | "min",
@@ -53,50 +54,43 @@ Como interpretar:
 - "quais jogos têm mais avaliações positivas?" => top_games, name, positive_ratings, max, desc.
 - "quais jogos são mais caros?" => top_games, name, price, max, desc.
 - "qual ano teve mais lançamentos?" => ranking, release_year, count, count, desc.
+- "quantos jogadores existem para jogos de terror?" => operation market, term "terror".
+- "qual o mercado de RPG?" => operation market, term "RPG".
+- "estime o público de jogos cooperativos" => operation market, term "cooperativo".
+- "quais as épocas com maior número de vendas?" => operation seasonality, top_n 12, order desc.
+- "em que mês devo fazer marketing?" => operation seasonality, top_n 12, order desc.
+- "qual o melhor mês para divulgar um jogo?" => operation seasonality, top_n 12, order desc.
+- "quais meses têm mais vendas de jogos de terror?" => operation seasonality, top_n 12, filters.steamspy_tags "Horror".
+- "qual a porcentagem de jogos por faixa etária?" => operation age_rating, top_n 25, order desc.
+- "quantos jogos são livres para todas as idades?" => operation age_rating, top_n 25, order desc.
+- "qual a classificação etária dos jogos de terror?" => operation age_rating, top_n 25, order desc, filters.steamspy_tags "Horror".
 - Perguntas gerais de programação sem relação com a base => scope dev_support.
-- "quais gêneros têm mais suporte a controle?" => controller_support.
-- "qual a porcentagem de jogos com suporte completo ou parcial a controle por gênero?" => controller_support.
 
-
-Prefira análise da base quando a pergunta falar de jogos, Steam, gênero, plataforma,
-avaliações, preço, lançamentos, desenvolvedores, publishers, tags, donos ou tempo jogado.
+Para perguntas sobre tamanho de mercado, quantidade de jogadores, público potencial ou número de donos de uma categoria/tag/gênero, use operation=market e preencha term somente com a categoria solicitada.
+A base não contém jogadores ativos atuais nem pessoas únicas entre vários jogos; market deve usar owners estimados por título e a resposta precisa deixar essa limitação explícita.
+Para perguntas sobre épocas, meses, estações, sazonalidade ou melhor momento para fazer marketing/divulgação, use operation=seasonality. Se o usuário citar uma categoria, coloque-a em filters (tags e categorias em inglês, como "Horror" ou "Indie").
+Prefira análise da base quando a pergunta falar de jogos, Steam, gênero, plataforma, avaliações, preço, lançamentos, desenvolvedores, publishers, tags, donos ou tempo jogado.
+Para perguntas sobre classificação indicativa, faixa etária, idade mínima ou público por idade, use operation=age_rating.
 """.strip()
 
 
 ANSWER_PROMPT = """
-Você é um bot de suporte para desenvolvedores que também analisa
-um dataset histórico da Steam.
+Você é um bot de suporte para desenvolvedores que também analisa um dataset histórico da Steam.
 Responda em português do Brasil.
 
-REGRAS OBRIGATÓRIAS:
-- Use apenas os dados fornecidos pelo resultado da análise.
-- Nunca invente estatísticas, valores, rankings ou conclusões.
-- Não confunda a ordem em que os dados aparecem com um ranking.
-- Se os dados não estiverem ordenados pela métrica solicitada,
-  não apresente um Top N como se estivesse correto.
-- Não diga que um gênero tem o maior percentual sem comparar
-  os valores disponíveis.
-- Não afirme que gêneros têm suporte alto ou baixo sem
-  comparação sustentada pelos dados.
-- Se não conseguir determinar o ranking corretamente,
-  informe essa limitação.
-- Responda primeiro de forma direta e depois explique brevemente.
-- Mantenha a resposta curta.
+Quando receber um RESULTADO CALCULADO PELO PANDAS:
+- Use apenas os números fornecidos para afirmações sobre a base.
+- Não invente estatísticas nem complemente com números externos.
+- Diga claramente quando a conclusão vale apenas para o período do dataset.
+- Responda primeiro de forma direta e depois explique em poucas linhas.
+- Se houver ranking, mencione os primeiros colocados e seus valores.
+- Para tendência, explique que "em alta" representa crescimento dentro da base e do período comparado.
+- Para análises de mercado, deixe claro que owners são faixas estimadas de proprietários por jogo, não jogadores ativos nem pessoas únicas; a soma pode contar uma mesma pessoa em vários jogos. Apresente isso como indicador aproximado, não como número exato de mercado.
+- Para sazonalidade, cite os meses do topo com o percentual de cada um e a quantidade de jogos lançados. Deixe claro que o mês é o de LANÇAMENTO dos jogos e que as vendas são estimadas por owners, então é um indicador de época forte e não vendas reais por mês. Pode sugerir planejar o marketing com antecedência para os meses do topo, sem inventar números.
+- Para classificação etária, cite cada faixa com seu percentual e a quantidade de jogos, no formato "Livre - X%" e "+16 - Y%". Explique que Livre significa sem idade mínima (required_age = 0) e que a faixa vem do campo required_age. Se as observações indicarem cobertura parcial, deixe isso claro na resposta.
+- Se o resultado estiver vazio, diga que os dados não permitem responder.
 
-REGRAS PARA controller_support:
-- Os percentuais representam jogos da base, não jogadores
-  que usariam controle.
-- "Não identificado" significa que o suporte não foi
-  identificado nos dados, não que o jogo não tem suporte.
-- Suporte completo ou parcial não comprova, por si só,
-  acessibilidade.
-- Nunca misture os percentuais de suporte completo e parcial.
-- Ao responder um Top N, use a métrica pedida e ordene
-  do maior para o menor quando solicitado.
-- Não invente gêneros ou percentuais ausentes.
-
-Para dúvidas gerais de desenvolvimento, dê orientação prática
-e código pequeno quando útil.
+Para dúvidas gerais de desenvolvimento, dê orientação prática e código pequeno quando útil.
 """.strip()
 
 
@@ -167,3 +161,23 @@ class SteamAgent:
 
         result = self.analytics.analyze(plan)
         return self.answer_from_analysis(question, result), result.plan
+    
+    for dirname, _, filenames in os.walk('SourceCode/data' ):
+        for filename in filenames:
+            print(os.path.join(dirname, filename))
+
+
+gpuBenchMark = pd.read_csv('SourceCode/data/gpuMerged.csv')
+rawDataSteam = pd.read_csv('SourceCode/data/gpuMerged.csv')
+
+steamGPUsData = rawDataSteam.reset_index(drop = True)
+
+if 'category' in steamGPUsData.columns:
+        steamGPUsData = steamGPUsData[steamGPUsData['category'] == 'Video Card Description'].reset_index(drop = True)
+else:
+      raise KeyError("The 'categories column is missing from the dataset.")
+     
+print(steamGPUsData['name'])
+
+gpuBenchMark['gpuName'] = gpuBenchMark['Brand'] + ' ' + gpuBenchMark['Model']
+print(gpuBenchMark)
