@@ -80,11 +80,10 @@ CodeWave/
 | 6 | Médio | Como desenvolvedor, busco saber a faixa etária que mais compra jogos. Para poder ter um público alvo maior. | 5 | 2 |
 7 | Médio | Como desenvolvedor, gostaria de saber a % de jogadores em potencial que usam controle. Para preparar o jogo para adaptabilidade caso necessário. | 3 | 2
 8 | Médio | Como desenvolvedor, gostaria de facilmente encontrar o número de jogadores de uma categoria específica, para ter uma ideia de mercado disponível. | 5 | 2
-9 | Médio | Como desenvolvedor, quero uma ferramenta que permita que eu veja a minha margem de lucro real de forma rápida, fácil e escalonável. Para ver a viabilidade de meus preços. | 8 | 2
-10 | Baixo | Como desenvolvedor, quero facilmente conseguir visualizar o hardware que meu público-alvo é mais provável de ter. Para criar um jogo que eles possam rodar. | 8 | 3
-11 | Baixo | Como desenvolvedor, gostaria de visualizar e comparar a diferença entre a ideia de Jogo A e Jogo B. Para poder fazer uma decisão informada na escolha de projeto. | 40 | 3
-12 | Baixo | Como desenvolvedor, busco uma ferramenta que agilize o meu processo de priorização baseado em minhas necessidades. Para eu não perder tempo em sistemas desnecessários. | 40 | 3
-13 | Baixo | Como desenvolvedor, quero uma ferramenta para correlacionar as coisas em comum que todos os jogos bem-sucedidos têm. Para ter uma ideia do que eles estão fazendo de certo. | 20 | 3
+9 | Baixo | Como desenvolvedor, quero facilmente conseguir visualizar o hardware que meu público-alvo é mais provável de ter. Para criar um jogo que eles possam rodar. | 8 | 3
+10 | Baixo | Como desenvolvedor, gostaria de visualizar e comparar a diferença entre a ideia de Jogo A e Jogo B. Para poder fazer uma decisão informada na escolha de projeto. | 40 | 3
+11 | Baixo | Como desenvolvedor, busco uma ferramenta que agilize o meu processo de priorização baseado em minhas necessidades. Para eu não perder tempo em sistemas desnecessários. | 40 | 3
+12 | Baixo | Como desenvolvedor, quero uma ferramenta para correlacionar as coisas em comum que todos os jogos bem-sucedidos têm. Para ter uma ideia do que eles estão fazendo de certo. | 20 | 3
 
 ## 🥈 DoR - Definition of Ready <a id = "dor"></a>
 * User Stories com **Critérios de Aceitação**
