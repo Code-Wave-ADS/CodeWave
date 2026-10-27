@@ -18,7 +18,7 @@
 
 >Status da Sprint 2: Em andamento ⏳
 >
->Vídeo da Sprint 2: [Vídeo ]()🎥
+>Vídeo da Sprint 2: [Vídeo ](https://youtu.be/DnXEIWIdfgk)🎥
 <BR>
 
 ## 🎯 Desafio <a id = "desafio" ></a>
