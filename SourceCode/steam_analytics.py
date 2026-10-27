@@ -64,7 +64,7 @@ ALLOWED_METRICS = {
 
 ALLOWED_AGGREGATIONS = {"count", "sum", "mean", "median", "max", "min"}
 
-ALLOWED_OPERATIONS = {"ranking", "trend", "summary", "top_games", "market", "seasonality", "age_rating"}
+ALLOWED_OPERATIONS = {"ranking", "trend", "summary", "top_games", "market", "seasonality", "age_rating", "controller_support"}
 
 # Additional analytical operation (all existing operations remain intact).
 ALLOWED_OPERATIONS.add("profit_estimate")
@@ -323,8 +323,77 @@ class SteamAnalytics:
             return self._seasonality(plan)
         if operation == "age_rating":  # NOVO
             return self._age_rating(plan)
+        if operation == "controller_support":
+            return self._controller_support(plan)
 
         raise ValueError(f"Operação não suportada: {operation}")
+
+    def _controller_support(self, plan: dict[str, Any]) -> AnalysisResult:
+        df = self._filtered_df(plan["filters"])
+
+        if "categories" not in df.columns:
+            raise ValueError("A base Steam não possui a coluna categories necessária para analisar suporte a controle.")
+
+        categories = df["categories"].fillna("").astype(str)
+        support_flags = pd.DataFrame(index=df.index)
+        support_flags["Suporte completo"] = categories.str.contains(
+            r"full controller support", case=False, regex=True
+        )
+        support_flags["Suporte parcial"] = categories.str.contains(
+            r"partial controller support", case=False, regex=True
+        )
+        support_flags["Suporte rastreado"] = categories.str.contains(
+            r"tracked controller support", case=False, regex=True
+        )
+        support_flags["Compatibilidade DualShock"] = categories.str.contains(
+            r"dualshock controller support", case=False, regex=True
+        )
+        support_flags["Compatibilidade DualSense"] = categories.str.contains(
+            r"dualsense controller support", case=False, regex=True
+        )
+        support_columns = list(support_flags.columns)
+        support_flags["Sem categoria de controle informada"] = ~support_flags[
+            support_columns
+        ].any(axis=1)
+
+        df = df.join(support_flags)
+        df = self._explode_dimension(df, "genres")
+
+        if df.empty:
+            result = pd.DataFrame(columns=[
+                "gênero", "jogos", *support_columns,
+                "Sem categoria de controle informada"
+            ])
+            notes = ["Nenhum jogo corresponde aos filtros informados."]
+            return AnalysisResult("Suporte a controles por gênero", result, notes, plan)
+
+        grouped = df.groupby("genres", dropna=True).agg(
+            jogos=("appid", "nunique"),
+            **{
+                column: (column, "sum")
+                for column in [*support_columns, "Sem categoria de controle informada"]
+            },
+        ).reset_index().rename(columns={"genres": "gênero"})
+
+        denominator = grouped["jogos"].replace(0, pd.NA)
+        for column in [*support_columns, "Sem categoria de controle informada"]:
+            grouped[f"{column} (%)"] = (
+                grouped[column].div(denominator).mul(100).round(2)
+            )
+
+        grouped = grouped.sort_values(
+            "Suporte completo", ascending=plan["order"] == "asc"
+        ).head(plan["top_n"]).reset_index(drop=True)
+
+        notes = [
+            f"Foram considerados {len(df['appid'].unique())} jogos distintos após os filtros.",
+            "Os percentuais usam como denominador os jogos de cada gênero, não o número de jogadores.",
+            "A ausência de uma categoria de controle no dataset não comprova que o jogo não funcione com controle.",
+            "Um jogo pode apresentar mais de uma categoria de compatibilidade; por isso, os percentuais podem se sobrepor e não precisam somar 100%.",
+            "As estimativas de suporte descrevem os jogos listados e não medem diretamente quantos jogadores em potencial usariam controle.",
+        ]
+
+        return AnalysisResult("Suporte a controles por gênero", grouped, notes, plan)
 
     def _normalize_plan(self, plan: dict[str, Any]) -> dict[str, Any]:
         normalized = dict(plan or {})

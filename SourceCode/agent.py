@@ -22,7 +22,7 @@ Retorne SOMENTE JSON válido, sem markdown.
 Schema:
 {
   "scope": "steam_analysis" | "dev_support",
-    "operation": "ranking" | "trend" | "summary" | "top_games" | "market" | "seasonality" | "age_rating",
+    "operation": "ranking" | "trend" | "summary" | "top_games" | "market" | "seasonality" | "age_rating" | "controller_support",
   "term": null,
   "dimension": "genres" | "platforms" | "categories" | "steamspy_tags" | "developer" | "publisher" | "release_year" | "name",
   "metric": "count" | "positive_ratings" | "negative_ratings" | "rating_ratio" | "average_playtime" | "median_playtime" | "price" | "owners_estimate" | "achievements",
@@ -73,7 +73,8 @@ Como interpretar:
 Para perguntas sobre tamanho de mercado, quantidade de jogadores, público potencial ou número de donos de uma categoria/tag/gênero, use operation=market e preencha term somente com a categoria solicitada.
 A base não contém jogadores ativos atuais nem pessoas únicas entre vários jogos; market deve usar owners estimados por título e a resposta precisa deixar essa limitação explícita.
 Para perguntas sobre épocas, meses, estações, sazonalidade ou melhor momento para fazer marketing/divulgação, use operation=seasonality. Se o usuário citar uma categoria, coloque-a em filters (tags e categorias em inglês, como "Horror" ou "Indie").
-Prefira análise da base quando a pergunta falar de jogos, Steam, gênero, plataforma, avaliações, preço, lançamentos, desenvolvedores, publishers, tags, donos ou tempo jogado.
+Para perguntas sobre suporte a controle/controles por gênero, use operation=controller_support, dimension=genres, metric=count, aggregation=count. Use top_n para limitar a quantidade de gêneros e filters para restringir a base quando solicitado.
+Prefira análise da base quando a pergunta falar de jogos, Steam, gênero, plataforma, avaliações, preço, lançamentos, desenvolvedores, publishers, tags, donos, tempo jogado ou suporte a controles.
 Para perguntas sobre classificação indicativa, faixa etária, idade mínima ou público por idade, use operation=age_rating.
 """.strip()
 
@@ -104,6 +105,7 @@ Quando receber um RESULTADO CALCULADO PELO PANDAS:
 - Para análises de mercado, deixe claro que owners são faixas estimadas de proprietários por jogo, não jogadores ativos nem pessoas únicas; a soma pode contar uma mesma pessoa em vários jogos. Apresente isso como indicador aproximado, não como número exato de mercado.
 - Para sazonalidade, cite os meses do topo com o percentual de cada um e a quantidade de jogos lançados. Deixe claro que o mês é o de LANÇAMENTO dos jogos e que as vendas são estimadas por owners, então é um indicador de época forte e não vendas reais por mês. Pode sugerir planejar o marketing com antecedência para os meses do topo, sem inventar números.
 - Para classificação etária, cite cada faixa com seu percentual e a quantidade de jogos, no formato "Livre - X%" e "+16 - Y%". Explique que Livre significa sem idade mínima (required_age = 0) e que a faixa vem do campo required_age. Se as observações indicarem cobertura parcial, deixe isso claro na resposta.
+- Para suporte a controles, interprete os percentuais como proporção de jogos de cada gênero com cada categoria de compatibilidade, nunca como proporção de jogadores que usariam controle. Explique que a ausência de uma categoria no dataset não comprova falta de suporte e que categorias podem se sobrepor.
 - Se o resultado estiver vazio, diga que os dados não permitem responder.
 
 Para dúvidas gerais de desenvolvimento, dê orientação prática e código pequeno quando útil.
@@ -264,7 +266,42 @@ class SteamAgent:
             raise ValueError("O plano retornado pelo Ollama não é um objeto JSON.")
         return plan
 
+    def _answer_controller_support(self, result: AnalysisResult) -> str:
+        if result.table.empty:
+            return "Os dados não permitem responder: nenhum jogo corresponde aos filtros informados."
+
+        table = result.table.sort_values(
+            "Suporte completo", ascending=False
+        ).head(5)
+
+        lines = ["Os gêneros com mais jogos com suporte completo a controle são:"]
+
+        for _, row in table.iterrows():
+            genero = row["gênero"]
+            quantidade = int(row["Suporte completo"])
+            total = int(row["jogos"])
+            percentual = row["Suporte completo (%)"]
+            lines.append(
+                f"- {genero}: {quantidade:,} jogos com suporte completo "
+                f"de {total:,} jogos ({percentual:.2f}%)."
+            )
+
+        lines.extend([
+            "",
+            "A classificação está ordenada pela quantidade absoluta de jogos, "
+            "não pelo percentual.",
+            "Os percentuais representam a proporção de jogos de cada gênero "
+            "com a categoria de compatibilidade informada, não a proporção "
+            "de jogadores que usam controle.",
+            "A ausência de uma categoria no dataset não comprova falta de "
+            "suporte, e as categorias de compatibilidade podem se sobrepor.",
+        ])
+        return "\n".join(lines)
+
     def answer_from_analysis(self, question: str, result: AnalysisResult) -> str:
+        if result.plan.get("operation") == "controller_support":
+            return self._answer_controller_support(result)
+
         response = ollama.chat(
             model=self.model,
             messages=[
