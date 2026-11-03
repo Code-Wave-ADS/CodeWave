@@ -16,7 +16,7 @@
 </p>
 <BR><BR>
 
->Status da Sprint 2: Em andamento ⏳
+>Status da Sprint 2: Concluído ✅
 >
 >Vídeo da Sprint 2: [Vídeo ](https://youtu.be/DnXEIWIdfgk)🎥
 <BR>
