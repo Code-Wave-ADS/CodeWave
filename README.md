@@ -166,6 +166,21 @@ O STEAM ROBOT é um assistente inteligente no Telegram projetado para desenvolve
 
 ### Iniciando BOT
 
+**1. Acessar o bot:** <p>
+
+- Link: https://t.me/steamcodewavebot <p>
+- Procura do telegram: `@steamcodewavebot` <p>
+- QRCode:
+<BR><BR>
+<p align = "center">
+  <img src = "docs/assets/img/Steambot.png" width = "250" height = "250"> 
+</p>
+<BR>
+
+**2. Iniciar a interação:**
+- Abra a conversa
+- Use o comando `/start`
+
 ### Exemplo de dúvidas que são respondidas
 
 - Qual gênero tem mais jogos?<br>
