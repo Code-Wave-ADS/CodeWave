@@ -21,7 +21,7 @@ Retorne SOMENTE JSON válido, sem markdown.
 
 Schema:
 {
-  "scope": "steam_analysis" | "dev_support",
+  "scope": "steam_analysis" | "dev_support"| "chat",
     "operation": "ranking" | "trend" | "summary" | "top_games" | "market" | "seasonality" | "age_rating" | "controller_support",
   "term": null,
   "dimension": "genres" | "platforms" | "categories" | "steamspy_tags" | "developer" | "publisher" | "release_year" | "name",
@@ -89,12 +89,28 @@ PLANNER_PROMPT += """
 - Valores monetários devem estar na mesma unidade; nunca faça conversão implícita de R$ ou US$.
 - O percentil 90 dos owners representa um cenário forte, não vendas confirmadas.
 """
-
+PLANNER_PROMPT += """
+- Escopo "chat": saudações, agradecimentos, conversa casual e perguntas sobre o que o bot faz => {"scope": "chat"}.
+- Se a pergunta for um complemento ("e de terror?", "e em 2018?"), combine com a pergunta anterior do usuário.
+"""
 
 ANSWER_PROMPT = """
-Você é um bot de suporte para desenvolvedores que também analisa um dataset histórico da Steam.
-Responda em português do Brasil.
+Você é um assistente simpático que ajuda desenvolvedores de jogos a entender o mercado da Steam.
+Responda em português do Brasil, como numa conversa de Telegram: direto, amigável e fácil de entender.
 
+ESTILO:
+- Comece com a resposta em uma frase, já com o número principal. Depois explique em no máximo 4 linhas.
+- Texto simples: NÃO use markdown (sem **, #, tabelas). Para listas use "•".
+- Traduza termos técnicos: "proprietários estimados" (não "owners"), "idade mínima" (não "required_age"), "base de dados" (não "dataset", "Pandas" ou "plano").
+- Use números no padrão brasileiro (1.234,5) e arredonde quando ajudar ("cerca de 20%").
+- Limitações e avisos: no máximo UMA frase curta no fim, sem repetir o que já foi dito.
+- Quando fizer sentido, termine com uma sugestão curta de próxima pergunta.
+- Nunca fale em "plano", "JSON", "resultado calculado" nem cite nomes de colunas.
+
+Exemplo de tom (valores entre colchetes são só ilustração):
+"O gênero com mais jogos é [Gênero 1], com [N] títulos, seguido de [Gênero 2] ([N]) e [Gênero 3] ([N]). Isso vale para os jogos da base, que cobre [ano] a [ano]. Quer ver quais gêneros mais cresceram nos últimos anos?"
+
+REGRAS DE CONTEÚDO:
 Quando receber um RESULTADO CALCULADO PELO PANDAS:
 - Use apenas os números fornecidos para afirmações sobre a base.
 - Não invente estatísticas nem complemente com números externos.
@@ -119,6 +135,17 @@ ANSWER_PROMPT += """
 - Owners não equivalem a vendas verificadas; o CSV não confirma moeda.
 """
 
+CHAT_PROMPT = """
+Você é um assistente simpático para desenvolvedores de jogos. Responda em português do Brasil, em 1 a 3 frases, sem markdown.
+Se perguntarem o que você faz: você analisa dados da Steam (gêneros, plataformas, preços, avaliações, mercado, melhores meses, faixa etária, lucro estimado) e tira dúvidas de programação.
+""".strip()
+
+DEV_SUPPORT_PROMPT = """
+Você é um assistente de programação simpático para quem desenvolve jogos e bots.
+Responda em português do Brasil, de forma prática e direta, com um exemplo curto de código quando ajudar.
+Não use markdown (sem **, # nem crases): escreva o código em linhas indentadas com 4 espaços.
+Não invente números do mercado de jogos: esses dados vêm da análise da base de dados do bot.
+""".strip()
 
 def _normal_text(value: str) -> str:
     text = unicodedata.normalize("NFKD", value.casefold())
@@ -170,7 +197,7 @@ def _format_number(value: float, decimals: int = 0) -> str:
     return f"{value:,.{decimals}f}".replace(",", "_").replace(".", ",").replace("_", ".")
 
 def _format_profit_answer(result: AnalysisResult, currency_warning: bool = False) -> str:
-    """Fixed, calculation-only response: no numeric hallucinations, no Ollama call."""
+    """Resposta fixa, só com valores calculados: sem alucinação numérica e sem chamar o Ollama."""
     rows = result.table.set_index("scenario")
     typical = rows.loc["typical_p50"]
     strong = rows.loc["sells_well_p90"]
@@ -181,30 +208,45 @@ def _format_profit_answer(result: AnalysisResult, currency_warning: bool = False
     year_min = result.plan["filters"].get("year_min")
     year_max = result.plan["filters"].get("year_max")
     lines = [
-        f"Estimativa para jogos com {category} {term} (Steam, lançamentos de {year_min} a {year_max}):",
-        f"• Amostra: {_format_number(int(strong['cohort_games']))} jogos pagos.",
-        f"• Preço mediano: {_format_number(strong['genre_median_list_price'], 2)} por cópia; faixa central: {_format_number(strong['genre_price_q25'], 2)}–{_format_number(strong['genre_price_q75'], 2)}.",
-        f"• Owners estimados: média {_format_number(strong['mean_estimated_owners'])}, mediana {_format_number(typical['owners_midpoint_proxy'])}; 'vende bem' (P90) {_format_number(strong['owners_midpoint_proxy'])}.",
+        f"Pelos dados da Steam, dá para ter uma noção do que esperar de um jogo com {category} {term} "
+        f"(lançamentos de {year_min} a {year_max}):",
+        "",
+        f"• Analisei {_format_number(int(strong['cohort_games']))} jogos pagos.",
+        f"• Preço mediano: {_format_number(strong['genre_median_list_price'], 2)}; "
+        f"metade dos jogos custa entre {_format_number(strong['genre_price_q25'], 2)} "
+        f"e {_format_number(strong['genre_price_q75'], 2)}.",
+        f"• Proprietários estimados por jogo: média de {_format_number(strong['mean_estimated_owners'])}, "
+        f"mediana de {_format_number(typical['owners_midpoint_proxy'])} e, nos que vendem bem "
+        f"(os 10% melhores), {_format_number(strong['owners_midpoint_proxy'])}.",
         "",
     ]
     if budget is None:
         lines += [
-            "Receita estimada para o desenvolvedor (após deduções presumidas):",
-            f"• Cenário típico (P50): {_format_number(typical['developer_revenue_proxy'], 2)}",
-            f"• Se vender bem (P90): {_format_number(strong['developer_revenue_proxy'], 2)}",
-            f"• Excelente desempenho (P95): {_format_number(breakout['developer_revenue_proxy'], 2)}",
+            "Receita estimada para o desenvolvedor (já descontando taxa da Steam, reembolsos e outros ajustes):",
+            f"• Jogo típico (mediano): {_format_number(typical['developer_revenue_proxy'], 2)}",
+            f"• Se vender bem (10% melhores): {_format_number(strong['developer_revenue_proxy'], 2)}",
+            f"• Se for um grande sucesso (5% melhores): {_format_number(breakout['developer_revenue_proxy'], 2)}",
             "",
-            "Lucro e margem NÃO podem ser calculados sem os custos. Qual é o seu orçamento total de desenvolvimento + marketing (na mesma unidade monetária do CSV)?",
+            "Para calcular lucro e margem, preciso saber quanto você pretende gastar "
+            "(desenvolvimento + marketing). Manda só o número, por exemplo 50000, "
+            "na mesma moeda dos preços da base.",
         ]
     else:
         lines += [
-            f"Com orçamento total de {_format_number(budget, 2)}:",
-            f"• Típico (P50): lucro {_format_number(typical['profit_proxy'], 2)}; margem {_format_number(typical['operating_margin_percent'], 2)}%.",
-            f"• Se vender bem (P90): lucro {_format_number(strong['profit_proxy'], 2)}; margem {_format_number(strong['operating_margin_percent'], 2)}%.",
-            f"• Excelente desempenho (P95): lucro {_format_number(breakout['profit_proxy'], 2)}; margem {_format_number(breakout['operating_margin_percent'], 2)}%.",
+            f"Considerando um orçamento total de {_format_number(budget, 2)} (valor negativo significa prejuízo):",
+            f"• Jogo típico: lucro de {_format_number(typical['profit_proxy'], 2)}, "
+            f"margem de {_format_number(typical['operating_margin_percent'], 1)}%.",
+            f"• Se vender bem: lucro de {_format_number(strong['profit_proxy'], 2)}, "
+            f"margem de {_format_number(strong['operating_margin_percent'], 1)}%.",
+            f"• Se for um grande sucesso: lucro de {_format_number(breakout['profit_proxy'], 2)}, "
+            f"margem de {_format_number(breakout['operating_margin_percent'], 1)}%.",
         ]
     if currency_warning:
-        lines += ["", "Você informou custos com uma moeda explícita. Não os subtraí: a moeda de preços no CSV não está identificada e não fiz conversão implícita."]
+        lines += [
+            "",
+            "Você informou o custo com símbolo de moeda, então não o descontei: a base não diz em que "
+            "moeda os preços estão e eu não faço conversão. Manda só o número que eu calculo.",
+        ]
     paid = result.plan["paid_unit_share"]
     realized = result.plan["price_realization"]
     refunds = result.plan["refund_rate"]
@@ -212,9 +254,11 @@ def _format_profit_answer(result: AnalysisResult, currency_warning: bool = False
     tax = result.plan["sales_tax_rate"]
     lines += [
         "",
-        f"Hipóteses: {paid:.0%} dos owners representariam vendas pagas; preço realizado {realized:.0%} da tabela; "
-        f"{refunds:.0%} de reembolsos/perdas; {steam_fee:.0%} de taxa Steam; {tax:.0%} de tributos sobre vendas.",
-        "ATENÇÃO: owners são estimativas históricas por jogo, NÃO vendas verificadas, jogadores ativos ou previsão garantida. Valores na unidade monetária não identificada do CSV; sem impostos sobre lucro, royalties ou despesas não orçadas.",
+        f"Premissas usadas: {paid:.0%} dos proprietários contam como compras pagas, preço efetivo de "
+        f"{realized:.0%} do preço de tabela, {refunds:.0%} de reembolsos e perdas, "
+        f"{steam_fee:.0%} de taxa da Steam e {tax:.0%} de impostos sobre vendas.",
+        "Lembrando: proprietários estimados não são vendas confirmadas nem jogadores ativos, e os valores "
+        "não incluem imposto de renda, royalties nem despesas fora do orçamento.",
     ]
     return "\n".join(lines)
 
@@ -239,7 +283,12 @@ class SteamAgent:
         self.analytics = analytics
         self.model = model
 
-    def make_plan(self, question: str) -> dict[str, Any]:
+    def make_plan(self, question: str, history: list[dict[str, str]] | None = None) -> dict[str, Any]:
+        previous = [m["content"] for m in (history or []) if m["role"] == "user"][-2:]
+        prefix = ""
+        if previous:
+            prefix = "Perguntas anteriores do usuário:\n" + "\n".join(f"- {q}" for q in previous) + "\n\n"
+
         response = ollama.chat(
             model=self.model,
             messages=[
@@ -247,13 +296,14 @@ class SteamAgent:
                 {
                     "role": "user",
                     "content": (
+                        f"{prefix}"
                         f"Pergunta: {question}\n\n"
                         f"Resumo da base carregada: {self.analytics.dataset_summary()}"
                     ),
                 },
             ],
             format="json",
-            options={"temperature": 0},
+            options={"temperature": 0, "num_ctx": 8192},
         )
 
         content = response.message.content.strip()
@@ -266,36 +316,44 @@ class SteamAgent:
             raise ValueError("O plano retornado pelo Ollama não é um objeto JSON.")
         return plan
 
+    def answer_chat(self, question: str, history: list[dict[str, str]] | None = None) -> str:
+        response = ollama.chat(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": CHAT_PROMPT},
+                *(history or []),
+                {"role": "user", "content": question},
+            ],
+            options={"temperature": 0.5, "num_ctx": 8192},
+        )
+        return response.message.content.strip()
+
     def _answer_controller_support(self, result: AnalysisResult) -> str:
         if result.table.empty:
-            return "Os dados não permitem responder: nenhum jogo corresponde aos filtros informados."
+            return (
+                "Não encontrei nenhum jogo com esses filtros, então não consigo responder essa. "
+                "Quer tentar com outro gênero ou outro período?"
+            )
 
-        table = result.table.sort_values(
-            "Suporte completo", ascending=False
-        ).head(5)
+        table = result.table.sort_values("Suporte completo", ascending=False).head(5)
 
         lines = ["Os gêneros com mais jogos com suporte completo a controle são:"]
-
         for _, row in table.iterrows():
             genero = row["gênero"]
             quantidade = int(row["Suporte completo"])
             total = int(row["jogos"])
             percentual = row["Suporte completo (%)"]
             lines.append(
-                f"- {genero}: {quantidade:,} jogos com suporte completo "
-                f"de {total:,} jogos ({percentual:.2f}%)."
+                f"• {genero}: {_format_number(quantidade)} jogos, de um total de "
+                f"{_format_number(total)} ({_format_number(percentual, 1)}%)"
             )
 
-        lines.extend([
+        lines += [
             "",
-            "A classificação está ordenada pela quantidade absoluta de jogos, "
-            "não pelo percentual.",
-            "Os percentuais representam a proporção de jogos de cada gênero "
-            "com a categoria de compatibilidade informada, não a proporção "
-            "de jogadores que usam controle.",
-            "A ausência de uma categoria no dataset não comprova falta de "
-            "suporte, e as categorias de compatibilidade podem se sobrepor.",
-        ])
+            "A lista está ordenada pela quantidade de jogos, não pelo percentual. "
+            "O percentual é a proporção de jogos do gênero com suporte completo (não de jogadores que "
+            "usam controle), e a ausência dessa categoria na base não prova que o jogo não funcione com controle.",
+        ]
         return "\n".join(lines)
 
     def answer_from_analysis(self, question: str, result: AnalysisResult) -> str:
@@ -308,28 +366,28 @@ class SteamAgent:
                 {"role": "system", "content": ANSWER_PROMPT},
                 {
                     "role": "user",
-                    "content": (
-                        f"PERGUNTA DO USUÁRIO:\n{question}\n\n"
-                        f"{result.to_context()}"
-                    ),
+                    "content": f"PERGUNTA DO USUÁRIO:\n{question}\n\n{result.to_context()}",
                 },
             ],
-            options={"temperature": 0.15},
+            options={"temperature": 0.3, "top_p": 0.9, "num_ctx": 8192},
         )
         return response.message.content.strip()
 
-    def answer_dev_support(self, question: str) -> str:
+    def answer_dev_support(self, question: str, history: list[dict[str, str]] | None = None) -> str:
         response = ollama.chat(
             model=self.model,
             messages=[
-                {"role": "system", "content": ANSWER_PROMPT},
+                {"role": "system", "content": DEV_SUPPORT_PROMPT},
+                *(history or []),
                 {"role": "user", "content": question},
             ],
-            options={"temperature": 0.2},
+            options={"temperature": 0.4, "top_p": 0.9, "num_ctx": 8192},
         )
         return response.message.content.strip()
 
-    def answer(self, question: str) -> tuple[str, dict[str, Any] | None]:
+    def answer(
+        self, question: str, history: list[dict[str, str]] | None = None
+    ) -> tuple[str, dict[str, Any] | None]:
         # Add-on: historical Steam country ranking, without interfering with other questions.
         if self._pergunta_sobre_ranking_de_paises(question):
             return consultar_ranking_paises(), {"operation": "country_ranking"}
@@ -346,9 +404,12 @@ class SteamAgent:
                 profit_result = self.analytics.analyze(profit_plan)
                 return _format_profit_answer(profit_result, wrong_currency), profit_result.plan
 
-        plan = self.make_plan(question)
-        if str(plan.get("scope", "steam_analysis")).strip().lower() == "dev_support":
-            return self.answer_dev_support(question), plan
+        plan = self.make_plan(question, history)
+        scope = str(plan.get("scope", "steam_analysis")).strip().lower()
+        if scope == "chat":
+            return self.answer_chat(question, history), plan
+        if scope == "dev_support":
+            return self.answer_dev_support(question, history), plan
 
         # Add-on: route unfamiliar profit wording through Ollama's planner.
         if plan.get("operation") == "profit_estimate":
@@ -364,22 +425,23 @@ class SteamAgent:
         result = self.analytics.analyze(plan)
         return self.answer_from_analysis(question, result), result.plan
     
-    for dirname, _, filenames in os.walk('SourceCode/data' ):
+if __name__ == "__main__":
+    # Código de exploração dos dados de GPU: só roda com `python agent.py`, nunca ao importar o módulo.
+    for dirname, _, filenames in os.walk('SourceCode/data'):
         for filename in filenames:
             print(os.path.join(dirname, filename))
 
+    gpuBenchMark = pd.read_csv('SourceCode/data/gpuMerged.csv')
+    rawDataSteam = pd.read_csv('SourceCode/data/gpuMerged.csv')
 
-gpuBenchMark = pd.read_csv('SourceCode/data/gpuMerged.csv')
-rawDataSteam = pd.read_csv('SourceCode/data/gpuMerged.csv')
+    steamGPUsData = rawDataSteam.reset_index(drop=True)
 
-steamGPUsData = rawDataSteam.reset_index(drop = True)
+    if 'category' in steamGPUsData.columns:
+        steamGPUsData = steamGPUsData[steamGPUsData['category'] == 'Video Card Description'].reset_index(drop=True)
+    else:
+        raise KeyError("The 'categories column is missing from the dataset.")
 
-if 'category' in steamGPUsData.columns:
-        steamGPUsData = steamGPUsData[steamGPUsData['category'] == 'Video Card Description'].reset_index(drop = True)
-else:
-      raise KeyError("The 'categories column is missing from the dataset.")
-     
-print(steamGPUsData['name'])
+    print(steamGPUsData['name'])
 
-gpuBenchMark['gpuName'] = gpuBenchMark['Brand'] + ' ' + gpuBenchMark['Model']
-print(gpuBenchMark)
+    gpuBenchMark['gpuName'] = gpuBenchMark['Brand'] + ' ' + gpuBenchMark['Model']
+    print(gpuBenchMark)

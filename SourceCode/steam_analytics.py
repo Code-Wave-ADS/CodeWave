@@ -10,6 +10,8 @@ from typing import Any
 
 import pandas as pd
 
+class UserFacingError(ValueError):
+    """Erro cuja mensagem já pode ser mostrada diretamente ao usuário."""
 
 MULTI_VALUE_COLUMNS = {
     "genres",
@@ -76,6 +78,57 @@ MONTH_NAMES = {
     9: "Setembro", 10: "Outubro", 11: "Novembro", 12: "Dezembro",
 }
 
+METRIC_LABELS = {
+    "count": "quantidade de jogos",
+    "positive_ratings": "avaliações positivas",
+    "negative_ratings": "avaliações negativas",
+    "rating_ratio": "% de avaliações positivas",
+    "average_playtime": "tempo médio jogado",
+    "median_playtime": "tempo mediano jogado",
+    "price": "preço",
+    "owners_estimate": "proprietários estimados",
+    "achievements": "conquistas",
+}
+
+AGGREGATION_LABELS = {
+    "sum": "soma", "mean": "média", "median": "mediana", "max": "máximo", "min": "mínimo",
+}
+
+DIMENSION_LABELS = {
+    "genres": "gênero", "platforms": "plataforma", "categories": "categoria",
+    "steamspy_tags": "tag", "developer": "desenvolvedora", "publisher": "publicadora",
+    "release_year": "ano de lançamento", "name": "jogo",
+}
+
+FILTER_LABELS = {
+    "year_min": "lançados a partir de", "year_max": "lançados até",
+    "free_only": "somente gratuitos", "paid_only": "somente pagos",
+    "price_min": "preço mínimo", "price_max": "preço máximo",
+    "genres": "gênero", "platforms": "plataforma", "categories": "categoria",
+    "steamspy_tags": "tag", "developer": "desenvolvedora", "publisher": "publicadora",
+    "name": "nome contém",
+}
+
+
+def _value_label(metric: str, aggregation: str) -> str:
+    if metric == "count" or aggregation == "count":
+        return METRIC_LABELS["count"]
+    return f"{METRIC_LABELS.get(metric, metric)} ({AGGREGATION_LABELS.get(aggregation, aggregation)})"
+
+
+def _describe_filters(filters: dict[str, Any] | None) -> str:
+    parts = []
+    for key, value in (filters or {}).items():
+        if value in (None, "", False):
+            continue
+        label = FILTER_LABELS.get(key, key)
+        parts.append(label if value is True else f"{label}: {value}")
+    return "; ".join(parts) if parts else "nenhum (base completa)"
+
+
+def _period(start: int, end: int) -> str:
+    return str(start) if start == end else f"{start}-{end}"
+
 def _age_label(age: int) -> str:
     return "Livre" if age == 0 else f"+{age}"
 
@@ -139,16 +192,16 @@ class AnalysisResult:
     plan: dict[str, Any]
 
     def to_context(self, max_rows: int = 20) -> str:
-        shown = self.table.head(max_rows)
+        shown = self.table.head(max_rows).round(2)
         table_text = shown.to_string(index=False)
         notes_text = "\n".join(f"- {note}" for note in self.notes) if self.notes else "- Nenhuma."
         return (
             f"ANÁLISE: {self.title}\n\n"
-            f"PLANO EXECUTADO:\n{json.dumps(self.plan, ensure_ascii=False, indent=2)}\n\n"
+            f"FILTROS APLICADOS: {_describe_filters(self.plan.get('filters'))}\n\n"
             f"RESULTADO CALCULADO PELO PANDAS:\n{table_text}\n\n"
             f"OBSERVAÇÕES:\n{notes_text}"
         )
-
+        
 
 class SteamAnalytics:
     REQUIRED_COLUMNS = {
@@ -546,21 +599,24 @@ class SteamAnalytics:
         result = result.sort_values("value", ascending=ascending).head(plan["top_n"]).reset_index(drop=True)
         result.insert(0, "posição", range(1, len(result) + 1))
 
-        title = (
-            f"Ranking por {plan['dimension']} usando {plan['aggregation']} de {plan['metric']}"
-        )
+        dimension_label = DIMENSION_LABELS.get(plan["dimension"], plan["dimension"])
+        value_label = _value_label(plan["metric"], plan["aggregation"])
+        result = result.rename(columns={plan["dimension"]: dimension_label, "value": value_label})
+
+        title = f"Ranking de {dimension_label} por {value_label}"
         notes = [f"Foram considerados {len(df)} jogos após os filtros."]
         if plan["dimension"] in MULTI_VALUE_COLUMNS:
             notes.append(
-                f"A coluna {plan['dimension']} pode conter vários valores por jogo; eles foram separados antes da contagem."
+                f"Um jogo pode ter vários valores de {dimension_label}; cada valor foi contado separadamente, "
+                "então o mesmo jogo pode aparecer em mais de um item do ranking."
             )
         if plan["metric"] == "owners_estimate":
-            notes.append("owners_estimate usa o ponto médio da faixa de owners do dataset.")
+            notes.append("Proprietários estimados usam o ponto médio da faixa de proprietários da base.")
         if plan["metric"] == "rating_ratio":
-            notes.append("rating_ratio = avaliações positivas / total de avaliações × 100.")
+            notes.append("% de avaliações positivas = avaliações positivas ÷ total de avaliações × 100.")
 
         return AnalysisResult(title, result, notes, plan)
-
+    
     def _summary(self, plan: dict[str, Any]) -> AnalysisResult:
         df = self._filtered_df(plan["filters"])
         metric = plan["metric"]
@@ -583,9 +639,10 @@ class SteamAnalytics:
             else:
                 value = series.mean()
 
-        result = pd.DataFrame([{"metric": metric, "aggregation": plan["aggregation"], "value": value}])
+        label = _value_label(metric, plan["aggregation"])
+        result = pd.DataFrame([{label: value}])
         notes = [f"Foram considerados {len(df)} jogos após os filtros."]
-        return AnalysisResult(f"Resumo de {metric}", result, notes, plan)
+        return AnalysisResult(f"Resumo: {label}", result, notes, plan)
 
     def _top_games(self, plan: dict[str, Any]) -> AnalysisResult:
         df = self._filtered_df(plan["filters"]).copy()
@@ -759,8 +816,9 @@ class SteamAnalytics:
         """
         requested_term = str(plan.get("term", "")).strip()
         if not requested_term:
-            raise ValueError(
-                "Informe uma categoria ou tag. Exemplo: /mercado Horror ou /mercado RPG."
+            raise UserFacingError(
+                'Me diz qual categoria você quer analisar. Por exemplo: '
+                '"qual o mercado de jogos de terror?" ou "qual o mercado de RPG?"'
             )
 
         # Remove prefixos comuns que podem vir de uma pergunta em linguagem natural.
@@ -770,7 +828,10 @@ class SteamAnalytics:
                 clean_term = clean_term[len(prefix):].strip()
         term = CATEGORY_ALIASES.get(clean_term, clean_term)
         if not term:
-            raise ValueError("Não consegui identificar a categoria. Tente /mercado Horror ou /mercado RPG.")
+            raise UserFacingError(
+                'Não consegui identificar a categoria. Tenta de novo citando o tipo de jogo, '
+                'por exemplo: "qual o mercado de RPG?"'
+            )
 
         searchable_columns = [
             column for column in ("genres", "categories", "steamspy_tags")
@@ -922,7 +983,7 @@ class SteamAnalytics:
                 ["Nenhum registro disponível após os filtros."],
                 plan,
             )
-
+        
         # Evita usar ano parcial no fim do dataset: o maior ano pode estar incompleto.
         max_year = int(df["release_year"].max())
         max_year_count = int((df["release_year"] == max_year).sum())
@@ -941,8 +1002,8 @@ class SteamAnalytics:
         previous = df[df["release_year"].between(previous_start, previous_end)]
 
         if recent.empty or previous.empty:
-            raise ValueError(
-                "Não há anos suficientes na base para comparar os dois períodos solicitados."
+            raise UserFacingError(
+                    "A base não tem anos suficientes para comparar esses dois períodos. Tenta com um período menor."
             )
 
         recent_counts = self._aggregate(recent, dimension, "count", "count").rename(columns={"value": "recent_count"})
@@ -988,12 +1049,16 @@ class SteamAnalytics:
         """
         genre = str(plan.get("term") or "").strip()
         if not genre:
-            raise ValueError("Informe um gênero (exemplo: Indie) para estimar receita.")
+            raise UserFacingError(
+                "Me diz o gênero ou a tag do jogo, por exemplo RPG, Adventure ou Puzzle, que eu estimo a receita."
+            )
         genre_key = CATEGORY_ALIASES.get(_text_key(genre), _text_key(genre))
 
         filters = dict(plan.get("filters") or {})
         if filters.get("free_only") is True:
-            raise ValueError("A estimativa de vendas não aceita free_only; use jogos pagos.")
+           raise UserFacingError(
+                "Para estimar vendas eu só uso jogos pagos, então não dá para fazer isso com jogos gratuitos."
+           )
         # Compare similarly aged titles rather than mixing brand-new releases
         # with games that accumulated owners over decades.
         if filters.get("year_min") is None and filters.get("year_max") is None:
@@ -1011,7 +1076,10 @@ class SteamAnalytics:
         if resolved is None:
             resolved = self.resolve_profit_category(genre)
         if resolved is None:
-            raise ValueError(f"Categoria {genre!r} não encontrada nos gêneros/tags Steam da base.")
+            raise UserFacingError(
+                    f'Não achei "{genre}" entre os gêneros e tags da Steam na base. '
+                "Tenta com algo como RPG, Adventure ou Puzzle."
+            )
         genre, dimension = resolved
         genre_key = _text_key(genre)
         # Keep requested filters except for the dimension of the sought category.
@@ -1026,9 +1094,9 @@ class SteamAnalytics:
         games = games.dropna(subset=["price", "owners_estimate"])
         games = games[(games["price"] > 0) & (games["owners_estimate"] >= 0)]
         if len(games) < 30:
-            raise ValueError(
-                f"Amostra insuficiente para {genre!r}: {len(games)} jogos pagos com dados válidos "
-                "(mínimo 30). Amplie os anos ou escolha outro gênero."
+            raise UserFacingError(
+                    f"Encontrei poucos jogos pagos de {genre} nesse período ({len(games)} com dados válidos; "
+                    "preciso de pelo menos 30) para estimar com segurança. Tenta outro gênero ou um período maior."
             )
 
         def number(name: str, default: float | None, low: float, high: float) -> float | None:

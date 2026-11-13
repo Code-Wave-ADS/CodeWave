@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from multiprocessing import context
 import os
 import re
 import time
@@ -15,8 +16,9 @@ from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandl
 
 from agent import SteamAgent
 from steam_analytics import SteamAnalytics
+from steam_analytics import SteamAnalytics, UserFacingError
 
-
+HISTORY_TURNS = 3  
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
 
@@ -67,26 +69,29 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await send_long(
         update,
         (
-            "Olá! Eu analiso a base Steam usando Pandas + Ollama.\n\n"
-            "Você pode perguntar naturalmente, por exemplo:\n"
+            "Oi! Eu sou um assistente para quem desenvolve jogos. "
+            "Analiso dados da Steam e também ajudo com dúvidas de programação.\n\n"
+            "Pode perguntar do seu jeito. Alguns exemplos:\n\n"
+            "📊 Panorama da Steam\n"
             "• Qual gênero tem mais jogos?\n"
             "• Qual gênero está em alta?\n"
             "• Qual plataforma aparece mais?\n"
-            "• Qual gênero tem mais avaliações positivas?\n"
             "• Qual é o preço médio dos jogos?\n"
             "• Quais jogos têm mais avaliações positivas?\n"
-            "• Qual ano teve mais lançamentos?\n"
+            "• Qual ano teve mais lançamentos?\n\n"
+            "🎯 Mercado e lançamento\n"
             "• Quais as épocas com maior número de vendas?\n"
-            "• Quais ao hardware dos usuários?\n"
-            "• Qual a porcentagem de jogos por faixa etária?\n\n"
-            "Também posso responder dúvidas gerais de programação.\n"
+            "• Qual a porcentagem de jogos por faixa etária?\n"
+            "• Qual o mercado de jogos de terror?\n\n"
+            "💰 Receita e lucro\n"
             "• Quanto posso faturar se meu jogo de RPG vender bem?\n"
             "• Qual o lucro de um Adventure com orçamento de 100000?\n"
-            "• Qual a receita de um jogo de Puzzle?\n"
-            "Use /status para verificar a base e o Ollama."
+            "• Qual a receita de um jogo de Puzzle?\n\n"
+            "💻 Programação\n"
+            "• Como faço um loop em Python?\n\n"
+            "Use /status para checar se a base e o modelo estão funcionando."
         ),
     )
-
 
 async def status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     base_status = (
@@ -106,6 +111,17 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def ajuda(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await start(update, context)
 
+async def keep_typing(bot, chat_id: int, stop: asyncio.Event) -> None:
+    """Mantém o 'digitando...' ativo enquanto a resposta é gerada (o Telegram apaga o aviso em ~5s)."""
+    while not stop.is_set():
+        try:
+            await bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
+        except Exception:
+            logger.warning("Não consegui enviar o aviso de 'digitando'")
+        try:
+            await asyncio.wait_for(stop.wait(), timeout=4)
+        except asyncio.TimeoutError:
+            pass
 
 async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     message = update.effective_message
@@ -130,30 +146,50 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                              else f"orçamento de {question}")
             question = f"Qual o lucro de um jogo de {pending['term']}? {cost_question}"
 
-    await context.bot.send_chat_action(chat_id=chat_obj.id, action=ChatAction.TYPING)
+    history = context.user_data.setdefault("history", [])
+
+    stop_typing = asyncio.Event()
+    typing_task = asyncio.create_task(keep_typing(context.bot, chat_obj.id, stop_typing))
 
     try:
-        answer, plan = await asyncio.to_thread(AGENT.answer, question)
+        answer, plan = await asyncio.to_thread(AGENT.answer, question, history)
+        history.extend([
+            {"role": "user", "content": question},
+            {"role": "assistant", "content": answer},
+        ])
+        del history[:-HISTORY_TURNS * 2]
         if plan and plan.get("operation") == "profit_estimate" and plan.get("budget") is None:
             context.user_data["profit_pending"] = {"term": plan["term"], "at": time.monotonic()}
         if plan:
             logger.info("Plano da pergunta %r: %s", question, plan)
-    except FileNotFoundError as exc:
+    except UserFacingError as exc:
         await send_long(update, str(exc))
         return
-    except Exception as exc:
+    except FileNotFoundError as exc:
+        logger.exception("Arquivo não encontrado")
+        await send_long(update, str(exc))
+        return
+    except (ConnectionError, ollama.ResponseError):
+        logger.exception("Falha ao falar com o Ollama")
+        await send_long(
+            update,
+            "Não consegui falar com o modelo de IA agora. Confere se o Ollama está aberto "
+            "e o modelo instalado, e tenta de novo.",
+        )
+        return
+    except Exception:
         logger.exception("Erro ao processar a pergunta")
         await send_long(
             update,
-            "Não consegui processar essa pergunta. Verifique se o Ollama está rodando, "
-            f"se o modelo '{OLLAMA_MODEL}' está instalado e se o steam.csv está correto. "
-            f"Erro: {type(exc).__name__}: {exc}",
+            "Opa, tive um problema para responder agora. Tenta de novo ou reformula a pergunta?",
         )
         return
+    finally:
+        stop_typing.set()
+        await typing_task
 
     await send_long(update, answer)
-
-
+    
 async def on_error(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
     logger.exception("Erro não tratado no bot", exc_info=context.error)
 
