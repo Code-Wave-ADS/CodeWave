@@ -425,6 +425,41 @@ class SteamAgent:
         result = self.analytics.analyze(plan)
         return self.answer_from_analysis(question, result), result.plan
     
+
+
+    #comparar ideia de jogo A como jogo B
+df = pd.read_csv("steam.csv")
+
+def compararIdeiasJogos(genero_a: str, genero_b: str) -> str:
+    df_a = [df["genres"].str.contains(genero_a, case= False, na=False)]
+    df_b = df[df["genres"].srt.contains(genero_b, case=False, na=False)]
+
+    if df_a.empty or df_b.empty:
+        return "Não encontrei dados suficientes para um dos gêneros informados. Tente termos em inglês (ex: Action, RPG, Indie)."
+    
+    qtd_a, qtd_b = len(df_a), len(df_b)
+    preco_a, preco_b = df_a["price"].mean(), df_b["price"].mean()
+    nota_a, nota_b = (
+        df_a["positive_ratings"].mean(),
+        df_b["positive_ratings"].mean(),
+    )
+    relatorio = (
+        f"📊 *Comparativo de Viabilidade: {genero_a.title()} vs"
+        f" {genero_b.title()}*\n\n"
+        f"📦 *Concorrência (Qtd. de Jogos):*\n"
+        f"• {genero_a.title()}: {qtd_a:,} títulos\n"
+        f"• {genero_b.title()}: {qtd_b:,} títulos\n\n"
+        f"💰 *Preço Médio:*\n"
+        f"• {genero_a.title()}: US$ {preco_a:.2f}\n"
+        f"• {genero_b.title()}: US$ {preco_b:.2f}\n\n"
+        f"⭐ *Média de Avaliações Positivas:*\n"
+        f"• {genero_a.title()}: {nota_a:,.0f}\n"
+        f"• {genero_b.title()}: {nota_b:,.0f}\n\n"
+        "💡 *Insight:* O nicho com menor concorrência e maior média de"
+        " avaliações tende a ter melhor retorno para equipes menores."
+    )
+    return relatorio
+    
 if __name__ == "__main__":
     # Código de exploração dos dados de GPU: só roda com `python agent.py`, nunca ao importar o módulo.
     for dirname, _, filenames in os.walk('SourceCode/data'):
