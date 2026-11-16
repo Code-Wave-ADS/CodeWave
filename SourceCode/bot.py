@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import telebot
 import asyncio
 import logging
 from multiprocessing import context
@@ -7,6 +8,7 @@ import os
 import re
 import time
 from pathlib import Path
+from agent import compararIdeiasJogos
 
 import ollama
 from dotenv import load_dotenv
@@ -214,6 +216,42 @@ def main() -> None:
     )
     app.run_polling(drop_pending_updates=True)
 
+
+
+
+bot = telebot.TeleBot("8991254570:AAFaA8IERySVyjIsrzhj9k9gMWVjfdDRUkM")
+
+@bot.message_handler(commands=["comparar"])
+
+def iniciarComparacao(message):
+    texto = message.text.replace("/comparar", "").strip()
+
+    if " vs " in texto.lower():
+        partes = texto.lower().split( " vs ")
+        resultado = compararIdeiasJogos(partes[0].strip(), partes[1].strip())
+        bot.reply_to(message, resultado, parse_mode="Markdown")
+    else:
+        msg = bot.reply_to(
+            message, "Qual o genero ou tag da **Ideia A**? (Ex: RPG, Platformer)"
+        )
+        bot.register_next_handler(msg, receber_ideia_a)
+
+def receber_ideia_a(message):
+  ideia_a = message.text.strip()
+  msg = bot.reply_to(
+      message, f"Anotado ({ideia_a}). Agora digite o gênero da **Ideia B**:"
+  )
+  bot.register_next_step_handler(msg, receber_ideia_b, ideia_a)
+
+
+def receber_ideia_b(message, ideia_a):
+  ideia_b = message.text.strip()
+  bot.send_message(message.chat.id, "⏳ Analisando base de dados da Steam...")
+  resultado = compararIdeiasJogos(ideia_a, ideia_b)
+  bot.send_message(message.chat.id, resultado, parse_mode="Markdown")
+
+
+bot.infinity_polling()
 
 if __name__ == "__main__":
     main()
