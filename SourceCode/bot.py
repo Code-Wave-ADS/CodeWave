@@ -1,26 +1,30 @@
 from __future__ import annotations
 
-import telebot
 import asyncio
 import logging
-from multiprocessing import context
 import os
 import re
 import time
 from pathlib import Path
-from agent import compararIdeiasJogos
 
 import ollama
 from dotenv import load_dotenv
 from telegram import Update
 from telegram.constants import ChatAction
-from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    ContextTypes,
+    ConversationHandler,
+    MessageHandler,
+    filters,
+)
 
-from agent import SteamAgent
-from steam_analytics import SteamAnalytics
+from agent import SteamAgent, compararIdeiasJogos
+from audio.handler import make_voice_handler
 from steam_analytics import SteamAnalytics, UserFacingError
 
-HISTORY_TURNS = 3  
+HISTORY_TURNS = 3
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
 
@@ -38,6 +42,9 @@ logger = logging.getLogger("steam-analytics-bot")
 
 ANALYTICS = SteamAnalytics(STEAM_CSV)
 AGENT = SteamAgent(ANALYTICS, OLLAMA_MODEL)
+
+# Estados da conversa do /comparar
+IDEIA_A, IDEIA_B = range(2)
 
 
 def split_message(text: str, limit: int = 3900) -> list[str]:
@@ -73,7 +80,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         (
             "Oi! Eu sou um assistente para quem desenvolve jogos. "
             "Analiso dados da Steam e também ajudo com dúvidas de programação.\n\n"
-            "Pode perguntar do seu jeito. Alguns exemplos:\n\n"
+            "Pode perguntar do seu jeito (por texto ou mensagem de voz 🎤). "
+            "Alguns exemplos:\n\n"
             "📊 Panorama da Steam\n"
             "• Qual gênero tem mais jogos?\n"
             "• Qual gênero está em alta?\n"
@@ -90,11 +98,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             "• Quanto posso faturar se meu jogo de RPG vender bem?\n"
             "• Qual o lucro de um Adventure com orçamento de 100000?\n"
             "• Qual a receita de um jogo de Puzzle?\n\n"
+            "⚖️ Comparar ideias\n"
+            "• /comparar RPG vs Platformer\n\n"
             "💻 Programação\n"
             "• Como faço um loop em Python?\n\n"
             "Use /status para checar se a base e o modelo estão funcionando."
         ),
     )
+
 
 async def status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     base_status = (
@@ -114,6 +125,7 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def ajuda(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await start(update, context)
 
+
 async def keep_typing(bot, chat_id: int, stop: asyncio.Event) -> None:
     """Mantém o 'digitando...' ativo enquanto a resposta é gerada (o Telegram apaga o aviso em ~5s)."""
     while not stop.is_set():
@@ -126,14 +138,24 @@ async def keep_typing(bot, chat_id: int, stop: asyncio.Event) -> None:
         except asyncio.TimeoutError:
             pass
 
+
 async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Mensagem de texto: pega o texto e entrega para o responder()."""
     message = update.effective_message
-    chat_obj = update.effective_chat
-    if not message or not chat_obj or not message.text:
+    if not message or not message.text:
         return
 
     question = message.text.strip()
     if not question:
+        return
+
+    await responder(update, context, question)
+
+
+async def responder(update: Update, context: ContextTypes.DEFAULT_TYPE, question: str) -> None:
+    """Responde a uma pergunta em texto. Usado tanto pelo texto digitado quanto pelo áudio transcrito."""
+    chat_obj = update.effective_chat
+    if not chat_obj:
         return
 
     # A short budget reply can continue the previous profit question for this user.
@@ -192,7 +214,71 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await typing_task
 
     await send_long(update, answer)
-    
+
+
+# ---------------------------------------------------------------------------
+# /comparar (convertido de telebot para python-telegram-bot)
+# ---------------------------------------------------------------------------
+
+async def _comparar(update: Update, ideia_a: str, ideia_b: str) -> None:
+    message = update.effective_message
+    if not message:
+        return
+    await message.reply_text("⏳ Analisando base de dados da Steam...")
+    try:
+        resultado = await asyncio.to_thread(compararIdeiasJogos, ideia_a, ideia_b)
+    except Exception:
+        logger.exception("Erro ao comparar %r e %r", ideia_a, ideia_b)
+        await message.reply_text(
+            "Não consegui fazer essa comparação agora. Tenta de novo com outros gêneros?"
+        )
+        return
+
+    try:
+        await message.reply_text(resultado, parse_mode="Markdown")
+    except Exception:
+        # Se o Telegram recusar a formatação, manda como texto simples.
+        await send_long(update, resultado)
+
+
+async def comparar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    message = update.effective_message
+    if not message:
+        return ConversationHandler.END
+
+    texto = " ".join(context.args or []).strip()
+    if re.search(r"\s+vs\s+", texto, re.IGNORECASE):
+        ideia_a, ideia_b = re.split(r"\s+vs\s+", texto, maxsplit=1, flags=re.IGNORECASE)
+        await _comparar(update, ideia_a.strip(), ideia_b.strip())
+        return ConversationHandler.END
+
+    await message.reply_text("Qual o gênero ou tag da Ideia A? (Ex: RPG, Platformer)")
+    return IDEIA_A
+
+
+async def receber_ideia_a(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    message = update.effective_message
+    context.user_data["ideia_a"] = (message.text or "").strip()
+    await message.reply_text(
+        f"Anotado ({context.user_data['ideia_a']}). Agora digite o gênero da Ideia B:"
+    )
+    return IDEIA_B
+
+
+async def receber_ideia_b(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    message = update.effective_message
+    ideia_a = context.user_data.pop("ideia_a", "")
+    await _comparar(update, ideia_a, (message.text or "").strip())
+    return ConversationHandler.END
+
+
+async def cancelar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    context.user_data.pop("ideia_a", None)
+    if update.effective_message:
+        await update.effective_message.reply_text("Comparação cancelada.")
+    return ConversationHandler.END
+
+
 async def on_error(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
     logger.exception("Erro não tratado no bot", exc_info=context.error)
 
@@ -207,6 +293,21 @@ def main() -> None:
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("ajuda", ajuda))
     app.add_handler(CommandHandler("status", status))
+
+    # O /comparar precisa vir ANTES do handler de texto, senão o chat() rouba as respostas.
+    app.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler("comparar", comparar)],
+            states={
+                IDEIA_A: [MessageHandler(filters.TEXT & ~filters.COMMAND, receber_ideia_a)],
+                IDEIA_B: [MessageHandler(filters.TEXT & ~filters.COMMAND, receber_ideia_b)],
+            },
+            fallbacks=[CommandHandler("cancelar", cancelar)],
+        )
+    )
+
+    # Mensagens de voz/áudio: transcreve e responde como se fosse texto.
+    app.add_handler(MessageHandler(filters.VOICE | filters.AUDIO, make_voice_handler(responder)))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat))
     app.add_error_handler(on_error)
 
@@ -217,42 +318,6 @@ def main() -> None:
     )
     app.run_polling(drop_pending_updates=True)
 
-
-
-
-bot = telebot.TeleBot("8991254570:AAFaA8IERySVyjIsrzhj9k9gMWVjfdDRUkM")
-
-@bot.message_handler(commands=["comparar"])
-
-def iniciarComparacao(message):
-    texto = message.text.replace("/comparar", "").strip()
-
-    if " vs " in texto.lower():
-        partes = texto.lower().split( " vs ")
-        resultado = compararIdeiasJogos(partes[0].strip(), partes[1].strip())
-        bot.reply_to(message, resultado, parse_mode="Markdown")
-    else:
-        msg = bot.reply_to(
-            message, "Qual o genero ou tag da **Ideia A**? (Ex: RPG, Platformer)"
-        )
-        bot.register_next_handler(msg, receber_ideia_a)
-
-def receber_ideia_a(message):
-  ideia_a = message.text.strip()
-  msg = bot.reply_to(
-      message, f"Anotado ({ideia_a}). Agora digite o gênero da **Ideia B**:"
-  )
-  bot.register_next_step_handler(msg, receber_ideia_b, ideia_a)
-
-
-def receber_ideia_b(message, ideia_a):
-  ideia_b = message.text.strip()
-  bot.send_message(message.chat.id, "⏳ Analisando base de dados da Steam...")
-  resultado = compararIdeiasJogos(ideia_a, ideia_b)
-  bot.send_message(message.chat.id, resultado, parse_mode="Markdown")
-
-
-bot.infinity_polling()
 
 if __name__ == "__main__":
     main()
