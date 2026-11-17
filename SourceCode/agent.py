@@ -428,7 +428,8 @@ class SteamAgent:
 
 
     #comparar ideia de jogo A como jogo B
-df = pd.read_csv("steam.csv")
+    #pedir para buscar por genero
+df = pd.read_csv("SourceCode/data/steam.csv")
 
 def compararIdeiasJogos(genero_a: str, genero_b: str) -> str:
     df_a = [df["genres"].str.contains(genero_a, case= False, na=False)]
