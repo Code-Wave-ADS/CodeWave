@@ -429,15 +429,26 @@ class SteamAgent:
 
     #comparar ideia de jogo A como jogo B
     #pedir para buscar por genero
-df = pd.read_csv("SourceCode/data/steam.csv")
+_df_steam = None
+
+
+def _carregar_steam() -> pd.DataFrame:
+    """Lê o CSV só na primeira vez que a comparação é usada."""
+    global _df_steam
+    if _df_steam is None:
+        caminho = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "steam.csv")
+        _df_steam = pd.read_csv(caminho)
+    return _df_steam
+
 
 def compararIdeiasJogos(genero_a: str, genero_b: str) -> str:
-    df_a = [df["genres"].str.contains(genero_a, case= False, na=False)]
-    df_b = df[df["genres"].srt.contains(genero_b, case=False, na=False)]
+    df = _carregar_steam()
+    df_a = df[df["genres"].str.contains(genero_a, case=False, na=False, regex=False)]
+    df_b = df[df["genres"].str.contains(genero_b, case=False, na=False, regex=False)]
 
     if df_a.empty or df_b.empty:
         return "Não encontrei dados suficientes para um dos gêneros informados. Tente termos em inglês (ex: Action, RPG, Indie)."
-    
+
     qtd_a, qtd_b = len(df_a), len(df_b)
     preco_a, preco_b = df_a["price"].mean(), df_b["price"].mean()
     nota_a, nota_b = (
